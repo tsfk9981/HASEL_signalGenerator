@@ -194,7 +194,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function storeData(app, ~, ~)
             % This function is called every n = scansAvailableFcnCount data
             % points read by the DAQ
-            global d voltageArr1 currentArr1 voltageArr2 currentArr2 triggerArr scanCount lastDataIndex
+            global d voltageArr1 currentArr1 voltageArr2 currentArr2 angleArr1 angleArr2 scanCount lastDataIndex
             
             numScansAvailable = d.NumScansAvailable;
             if numScansAvailable == 0
@@ -229,10 +229,13 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             currentArr2(startIndex: endIndex) = current2;
             % channel 4 is current input from Trek 2 (in volts)
             
-            trigger = scanData(:, 5);
-            triggerArr(startIndex: endIndex) = trigger;
-            % channel 5 is trigger input from DAQ output 2 (in volts)
+            angle1 = scanData(:, 5);
+            angleArr1(startIndex: endIndex) = angle1;
+            % channel 5 is encoder angle 1 (in volts)
             
+            angle2 = scanData(:, 6);
+            angleArr2(startIndex: endIndex) = angle2;
+            % channel 6 is encoder angle 2 (in volts)
             
             % Plot data every cycle
             x = linspace(cast(startIndex, 'double'), cast(endIndex, 'double'), length(force));
@@ -261,7 +264,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function startupFcn(app)
             DQL = daqlist; % get connected device list
 %             DevName = DQL.DeviceID(1); % select the first one (["Dev1", "SimDev1"] or ["SimDev1"])
-            DevName = "Dev1";
+            DevName = "Dev6";
             % DAQ Dev1 ao0 = Voltage output to Trek
             % DAQ Dev1 ao1 = sync signal
             
@@ -319,7 +322,10 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             % TREK 2 current monitor
             
             addinput(d, DevName, "ai6", "Voltage");
-            % Triger signal to Arduino
+            % hip angle
+
+            addinput(d, DevName, "ai7", "Voltage");
+            % knee angle
             
         end
 
@@ -336,7 +342,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         % Value changed function: GoButton
         function GoButtonValueChanged(app, event)
-            global d voltageArr1 voltageArr2 currentArr1 currentArr2 triggerArr scanCount lastDataIndex kV kF kL
+            global d voltageArr1 voltageArr2 currentArr1 currentArr2 angleArr1 angleArr2 scanCount lastDataIndex kV kF kL
             
             
             fullSignal = buildSignal(app);
@@ -393,7 +399,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 currentArr1 = zeros(length(fullSignal), 1);
                 voltageArr2 = zeros(length(fullSignal), 1);
                 currentArr2 = zeros(length(fullSignal), 1);
-                triggerArr = zeros(length(fullSignal), 1);
+                angleArr1 = zeros(length(fullSignal), 1);
+                angleArr2 = zeros(length(fullSignal), 1);
                 
                 scanCount = 0;
                 preload(d, fullSignal(:, 1:2));
@@ -455,7 +462,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                         voltageArr2(1:lastDataIndex)*kV,...
                         currentArr2(1:lastDataIndex)*kV,...
                         fullSignal(:, 2),...
-                        triggerArr(1: lastDataIndex),...
+                        angleArr1(1: lastDataIndex),...
+                        angleArr2(1: lastDataIndex),...
                         'VariableNames', {...
                         'Time [s]',...
                         'Voltage ref [kV]',...
@@ -464,7 +472,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                         'Voltage act 2 [kV]',...
                         'Current 2 [A]',...
                         'Trigger out [V]',...
-                        'Trigger in [V]'...
+                        'Angle 1 [V]'...
+                        'Angle 2 [V]'...
                         }), rawFilename);
                 end
                 %                 processedFilename = fullfile(app.SelectfilepathEditField.Value, [app.ProcessedfilenameEditField.Value ,'_sineSweep_', textPara]);
@@ -633,9 +642,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             xlabel(app.UIAxes, 'Time (s)')
             ylabel(app.UIAxes, 'Voltage (kV)')
             app.UIAxes.PlotBoxAspectRatio = [1.45226130653266 1 1];
-            app.UIAxes.XTickLabelRotation = 0;
-            app.UIAxes.YTickLabelRotation = 0;
-            app.UIAxes.ZTickLabelRotation = 0;
             app.UIAxes.Position = [82 217 404 278];
 
             % Create BrowseButton
@@ -662,7 +668,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             % Create SelectfilepathEditField
             app.SelectfilepathEditField = uieditfield(app.UIFigure, 'text');
             app.SelectfilepathEditField.Position = [533 428 268 22];
-            app.SelectfilepathEditField.Value = '\\space\fukushima\RM\prj_legETH\experiments\20220718_legExperiment';
+            app.SelectfilepathEditField.Value = '\\space\fukushima\RM\prj_legETH\experiments\20221108_selfSensing_2DOF';
 
             % Create RawfileprefixEditFieldLabel
             app.RawfileprefixEditFieldLabel = uilabel(app.UIFigure);
@@ -686,7 +692,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             % Create ProcessedfilenameEditField
             app.ProcessedfilenameEditField = uieditfield(app.UIFigure, 'text');
             app.ProcessedfilenameEditField.Position = [628 394 173 22];
-            app.ProcessedfilenameEditField.Value = 'test';
+            app.ProcessedfilenameEditField.Value = 'selfSensing';
 
             % Create SaverawfileCheckBox
             app.SaverawfileCheckBox = uicheckbox(app.UIFigure);
@@ -745,7 +751,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.methodDropDown.Items = {'step', 'sine', 'ramped square'};
             app.methodDropDown.ValueChangedFcn = createCallbackFcn(app, @methodDropDownValueChanged, true);
             app.methodDropDown.Position = [245 101 124 22];
-            app.methodDropDown.Value = 'ramped square';
+            app.methodDropDown.Value = 'step';
 
             % Create sLabel
             app.sLabel = uilabel(app.VoltageParametersPanel);
@@ -763,7 +769,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.TotaltimeEditField.Limits = [0 Inf];
             app.TotaltimeEditField.ValueChangedFcn = createCallbackFcn(app, @TotaltimeEditFieldValueChanged, true);
             app.TotaltimeEditField.Position = [103 132 33 22];
-            app.TotaltimeEditField.Value = 24;
+            app.TotaltimeEditField.Value = 30;
 
             % Create frequencyEditFieldLabel
             app.frequencyEditFieldLabel = uilabel(app.VoltageParametersPanel);
@@ -776,7 +782,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.frequencyEditField.Limits = [0 Inf];
             app.frequencyEditField.ValueChangedFcn = createCallbackFcn(app, @frequencyEditFieldValueChanged, true);
             app.frequencyEditField.Position = [103 101 33 22];
-            app.frequencyEditField.Value = 0.25;
+            app.frequencyEditField.Value = 0.04;
 
             % Create HzLabel_5
             app.HzLabel_5 = uilabel(app.VoltageParametersPanel);
@@ -801,7 +807,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.dutyratioEditField.Limits = [0 Inf];
             app.dutyratioEditField.ValueChangedFcn = createCallbackFcn(app, @dutyratioEditFieldValueChanged, true);
             app.dutyratioEditField.Position = [103 13 33 22];
-            app.dutyratioEditField.Value = 50;
+            app.dutyratioEditField.Value = 80;
 
             % Create rampspeedEditFieldLabel
             app.rampspeedEditFieldLabel = uilabel(app.VoltageParametersPanel);
