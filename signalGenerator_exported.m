@@ -158,14 +158,43 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             % actuator contract two times in a voltage sine wave
             refSignal = abs(voltageSignal);
             
-            syncSignal = zeros(totalSamples, 1);
-            syncSignal(fix((timeInit - 0.5)*sampRate): fix((timeInit -0.4)*sampRate)) = 5;
+%             syncSignal = zeros(totalSamples, 1);
+%             syncSignal(fix((timeInit - 0.5)*sampRate): fix((timeInit -0.4)*sampRate)) = 5;
+            voltageSignal_1 = voltageSignal;
+            voltageSignal_2 = shiftPhase(app, voltageSignal, 90, timeInit);
+            voltageSignal_3 = shiftPhase(app, voltageSignal, 180, timeInit);
+            voltageSignal_4 = shiftPhase(app, voltageSignal, 270, timeInit);
+
+
             
             
             %             dumpSignal = zeros(totalSamples, 1);
-            fullSignal = [voltageSignal, syncSignal, time, refSignal];
+            fullSignal = [time, refSignal, voltageSignal_1, voltageSignal_2, voltageSignal_3, voltageSignal_4];
         end
         
+        function Out = shiftPhase(app, Data, phase, timeInit)
+            sampRate = app.SamplerateEditField.Value;
+            freq = app.frequencyEditField.Value;
+
+            ind_signalStart = fix(timeInit*sampRate) + 1;
+
+            Data_init = Data(1: ind_signalStart - 1);
+            Data_signal = Data(ind_signalStart: end);
+
+            ind_cut = length(Data_signal) - (phase/360)*sampRate/freq;
+
+            if mod(length(Data_signal), sampRate/freq*2) ~= 0
+                error('error: time duration must fit to end of base signal')
+            end
+
+            Data_signal_sifted = [Data_signal(ind_cut: end); Data_signal(1: ind_cut - 1)];
+
+            Out = [Data_init; Data_signal_sifted];
+%             length(Out)
+            % todo handling exceptions when phase = 0 or 360
+        end
+
+
         function buildPreview(app)
             global kV
             sampRate = app.SamplerateEditField.Value;
@@ -176,14 +205,19 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             
             cla(app.UIAxes, "reset")
 
-            yyaxis(app.UIAxes, 'left');
-            plot(app.UIAxes, fullSignal(:, 3), fullSignal(:, 1)*kV);
+%             yyaxis(app.UIAxes, 'left');
+            hold(app.UIAxes, "on")
+            plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 3)*kV);
+            plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 4)*kV);
+            plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 5)*kV);
+            plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 6)*kV);
             ylim(app.UIAxes, [(-1.5)*maxVoltage, 1.5*maxVoltage])
             ylabel(app.UIAxes, 'Voltage (kV)');
 
-            yyaxis(app.UIAxes, 'right');
-            plot(app.UIAxes, fullSignal(:, 3), fullSignal(:, 2));
-            ylabel(app.UIAxes, 'Sync');
+%             yyaxis(app.UIAxes, 'right');
+%             plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 4)*kV);
+%             ylim(app.UIAxes, [(-1.5)*maxVoltage, 1.5*maxVoltage])
+%             ylabel(app.UIAxes, 'Sync');
             
             grid(app.UIAxes, 'on')
             
@@ -194,7 +228,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function storeData(app, ~, ~)
             % This function is called every n = scansAvailableFcnCount data
             % points read by the DAQ
-            global d voltageArr1 currentArr1 voltageArr2 currentArr2 angleArr1 angleArr2 scanCount lastDataIndex
+            global d voltageArr1 currentArr1 voltageArr2 currentArr2 voltageArr3 currentArr3 voltageArr4 currentArr4 angleArr1 angleArr2 scanCount lastDataIndex
             
             numScansAvailable = d.NumScansAvailable;
             if numScansAvailable == 0
@@ -229,13 +263,29 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             currentArr2(startIndex: endIndex) = current2;
             % channel 4 is current input from Trek 2 (in volts)
             
-            angle1 = scanData(:, 5);
-            angleArr1(startIndex: endIndex) = angle1;
-            % channel 5 is encoder angle 1 (in volts)
+            voltage3 = scanData(:, 5);
+            voltageArr3(startIndex: endIndex) = voltage3;
+            % channel 5 is voltage input from Trek 3 (in volts)
             
-            angle2 = scanData(:, 6);
+            current3 = scanData(:, 6);
+            currentArr3(startIndex: endIndex) = current3;
+            % channel 6 is current input from Trek 3 (in volts)
+            
+            voltage4 = scanData(:, 7);
+            voltageArr4(startIndex: endIndex) = voltage4;
+            % channel 7 is voltage input from Trek 4 (in volts)
+            
+            current4 = scanData(:, 8);
+            currentArr4(startIndex: endIndex) = current4;
+            % channel 8 is current input from Trek 4 (in volts)
+            
+            angle1 = scanData(:, 9);
+            angleArr1(startIndex: endIndex) = angle1;
+            % channel 16 is encoder angle 1 (in volts)
+            
+            angle2 = scanData(:, 10);
             angleArr2(startIndex: endIndex) = angle2;
-            % channel 6 is encoder angle 2 (in volts)
+            % channel 17 is encoder angle 2 (in volts)
             
             % Plot data every cycle
             x = linspace(cast(startIndex, 'double'), cast(endIndex, 'double'), length(force));
@@ -302,12 +352,20 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             d.ScansAvailableFcnCount = app.SamplerateEditField.Value*1;
             % every 1 second
             % by default, call storeData every cycle
+
+            
             
             addoutput(d, DevName, "ao0", "Voltage");
-            % voltage output to TREks
+            % voltage output to TREk1
             
             addoutput(d, DevName, "ao1", "Voltage");
-            % sync output to Arduino
+            % voltage output to TREk2
+            
+            addoutput(d, DevName, "ao2", "Voltage");
+            % voltage output to TREk3
+
+            addoutput(d, DevName, "ao3", "Voltage");
+            % voltage output to TREk4
             
             addinput(d, DevName, "ai0", "Voltage");
             % TREK 1 voltage monitor
@@ -321,12 +379,26 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             addinput(d, DevName, "ai3", "Voltage");
             % TREK 2 current monitor
             
+            addinput(d, DevName, "ai4", "Voltage");
+            % TREK 3 voltage monitor
+            
+            addinput(d, DevName, "ai5", "Voltage");
+            % TREK 3 current monitor
+            
             addinput(d, DevName, "ai6", "Voltage");
+            % TREK 4 voltage monitor
+            
+            addinput(d, DevName, "ai7", "Voltage");
+            % TREK 4 current monitor
+            
+            addinput(d, DevName, "ai16", "Voltage");
             % hip angle
 
-            addinput(d, DevName, "ai7", "Voltage");
+            addinput(d, DevName, "ai17", "Voltage");
             % knee angle
             
+
+            d.Channels
         end
 
         % Button pushed function: BrowseButton
@@ -342,7 +414,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         % Value changed function: GoButton
         function GoButtonValueChanged(app, event)
-            global d voltageArr1 voltageArr2 currentArr1 currentArr2 angleArr1 angleArr2 scanCount lastDataIndex kV kF kL
+            global d voltageArr1 voltageArr2 voltageArr3 voltageArr4 currentArr1 currentArr2 currentArr3 currentArr4 angleArr1 angleArr2 scanCount lastDataIndex kV kF kL
             
             
             fullSignal = buildSignal(app);
@@ -362,15 +434,15 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                     return
                 end
                 
-                app.UIAxes.YAxis(2).Visible = 'on';
-                xlabel(app.UIAxes, 'Sample Number');
-                yyaxis(app.UIAxes, 'right');
-                %                 xlim(app.UIAxes, 'auto')
-                %                 ylim(app.UIAxes, 'auto');
-                ylabel(app.UIAxes, 'Force (N)');
-                yyaxis(app.UIAxes, 'left');
-                %                 ylim(app.UIAxes, 'auto')
-                ylabel(app.UIAxes, 'Displacement (mm)');
+%                 app.UIAxes.YAxis(2).Visible = 'on';
+%                 xlabel(app.UIAxes, 'Sample Number');
+%                 yyaxis(app.UIAxes, 'right');
+%                 %                 xlim(app.UIAxes, 'auto')
+%                 %                 ylim(app.UIAxes, 'auto');
+%                 ylabel(app.UIAxes, 'Force (N)');
+%                 yyaxis(app.UIAxes, 'left');
+%                 %                 ylim(app.UIAxes, 'auto')
+%                 ylabel(app.UIAxes, 'Displacement (mm)');
                 
                 % Check for valid filenames
                 if app.SaverawfileCheckBox.Value && app.RawfileprefixEditField.Value == ""
@@ -399,11 +471,15 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 currentArr1 = zeros(length(fullSignal), 1);
                 voltageArr2 = zeros(length(fullSignal), 1);
                 currentArr2 = zeros(length(fullSignal), 1);
+                voltageArr3 = zeros(length(fullSignal), 1);
+                currentArr3 = zeros(length(fullSignal), 1);
+                voltageArr4 = zeros(length(fullSignal), 1);
+                currentArr4 = zeros(length(fullSignal), 1);
                 angleArr1 = zeros(length(fullSignal), 1);
                 angleArr2 = zeros(length(fullSignal), 1);
                 
                 scanCount = 0;
-                preload(d, fullSignal(:, 1:2));
+                preload(d, fullSignal(:, 3:6));
                 
                 %                 while 1 % wait for trigger
                 %                     tmp = read(d, "OutputFormat","Matrix");
@@ -431,10 +507,10 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 
                 cla(app.UIAxes, "reset")
                 yyaxis(app.UIAxes, 'left');
-                plot(app.UIAxes, fullSignal(:, 3), fullSignal(:, 1));
+                plot(app.UIAxes, fullSignal(:, 1), voltageArr1);
                 ylabel(app.UIAxes, 'voltage [kV]');
                 yyaxis(app.UIAxes, 'right');
-                plot(app.UIAxes, fullSignal(:, 3), fullSignal(:, 2));
+                plot(app.UIAxes, fullSignal(:, 1), currentArr1);
                 ylabel(app.UIAxes, 'current [?]');
                 ylabel(app.UIAxes, 'time [s]')
                 
@@ -455,23 +531,35 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                         [app.RawfileprefixEditField.Value, app.ProcessedfilenameEditField.Value, '_', textPara, datestr(now,'_yyyy_mm_dd_HHMM'), '.dat']);
                     
                     writetable(table(...
-                        fullSignal(:, 3),...
                         fullSignal(:, 1),...
+                        fullSignal(:, 3),...
+                        fullSignal(:, 4),...
+                        fullSignal(:, 5),...
+                        fullSignal(:, 6),...
                         voltageArr1(1:lastDataIndex)*kV,...
                         currentArr1(1:lastDataIndex)*kV,...
                         voltageArr2(1:lastDataIndex)*kV,...
                         currentArr2(1:lastDataIndex)*kV,...
-                        fullSignal(:, 2),...
+                        voltageArr3(1:lastDataIndex)*kV,...
+                        currentArr3(1:lastDataIndex)*kV,...
+                        voltageArr4(1:lastDataIndex)*kV,...
+                        currentArr4(1:lastDataIndex)*kV,...
                         angleArr1(1: lastDataIndex),...
                         angleArr2(1: lastDataIndex),...
                         'VariableNames', {...
                         'Time [s]',...
-                        'Voltage ref [kV]',...
-                        'Voltage act 1 [kV]',...
+                        'Voltage ref 1[kV]',...
+                        'Voltage ref 2[kV]',...
+                        'Voltage ref 3[kV]',...
+                        'Voltage ref 4[kV]',...
+                        'Voltage 1 [kV]',...
                         'Current 1 [A]',...
-                        'Voltage act 2 [kV]',...
+                        'Voltage 2 [kV]',...
                         'Current 2 [A]',...
-                        'Trigger out [V]',...
+                        'Voltage 3 [kV]',...
+                        'Current 3 [A]',...
+                        'Voltage 4 [kV]',...
+                        'Current 4 [A]',...
                         'Angle 1 [V]'...
                         'Angle 2 [V]'...
                         }), rawFilename);
@@ -481,7 +569,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 %                     {'Frequency [Hz]', 'Amplitude [dB]', 'Phase [deg]'}), processedFilename);
                 % Fush the DAQ and ensure zero voltage
                 flush(d);
-                write(d, [0, 0]);
+                write(d, [0, 0, 0, 0]);
                 
 
                 app.GoButton.BackgroundColor = [0.96, 0.96, 0.96];
@@ -642,6 +730,9 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             xlabel(app.UIAxes, 'Time (s)')
             ylabel(app.UIAxes, 'Voltage (kV)')
             app.UIAxes.PlotBoxAspectRatio = [1.45226130653266 1 1];
+            app.UIAxes.XTickLabelRotation = 0;
+            app.UIAxes.YTickLabelRotation = 0;
+            app.UIAxes.ZTickLabelRotation = 0;
             app.UIAxes.Position = [82 217 404 278];
 
             % Create BrowseButton
@@ -668,7 +759,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             % Create SelectfilepathEditField
             app.SelectfilepathEditField = uieditfield(app.UIFigure, 'text');
             app.SelectfilepathEditField.Position = [533 428 268 22];
-            app.SelectfilepathEditField.Value = '\\space\fukushima\RM\prj_legETH\experiments\20221108_selfSensing_2DOF';
+            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator';
 
             % Create RawfileprefixEditFieldLabel
             app.RawfileprefixEditFieldLabel = uilabel(app.UIFigure);
@@ -712,7 +803,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             % Create ao0ao1ai0ai1ai2Label
             app.ao0ao1ai0ai1ai2Label = uilabel(app.SetupPanel);
             app.ao0ao1ai0ai1ai2Label.Position = [4 -2 180 168];
-            app.ao0ao1ai0ai1ai2Label.Text = {'AO0: TREK "voltage in"'; 'AO1: Arduino, sync signal 5V'; 'AI0: TREK 1 "voltage monitor"'; 'AI1: TREK 1 "current monitor"'; 'AI2: TREK 2 "voltage monitor"'; 'AI3: TREK 2 "current monitor"'; 'AI6: sync signal from AO1'};
+            app.ao0ao1ai0ai1ai2Label.Text = {'AO0-3: TREK "voltage in"'; 'AI0: TREK 1 "voltage monitor"'; 'AI1: TREK 1 "current monitor"'; 'AI2: TREK 2 "voltage monitor"'; 'AI3: TREK 2 "current monitor"'; 'AI4: TREK 3 "voltage monitor"'; 'AI5: TREK 3 "current monitor"'; 'AI6: TREK 4 "voltage monitor"'; 'AI7: TREK 4 "current monitor"'; 'AI16: hip encoder'; 'A17: knee encoder'};
 
             % Create VoltageParametersPanel
             app.VoltageParametersPanel = uipanel(app.UIFigure);
@@ -751,7 +842,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.methodDropDown.Items = {'step', 'sine', 'ramped square'};
             app.methodDropDown.ValueChangedFcn = createCallbackFcn(app, @methodDropDownValueChanged, true);
             app.methodDropDown.Position = [245 101 124 22];
-            app.methodDropDown.Value = 'step';
+            app.methodDropDown.Value = 'sine';
 
             % Create sLabel
             app.sLabel = uilabel(app.VoltageParametersPanel);
@@ -769,7 +860,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.TotaltimeEditField.Limits = [0 Inf];
             app.TotaltimeEditField.ValueChangedFcn = createCallbackFcn(app, @TotaltimeEditFieldValueChanged, true);
             app.TotaltimeEditField.Position = [103 132 33 22];
-            app.TotaltimeEditField.Value = 30;
+            app.TotaltimeEditField.Value = 5;
 
             % Create frequencyEditFieldLabel
             app.frequencyEditFieldLabel = uilabel(app.VoltageParametersPanel);
@@ -782,7 +873,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.frequencyEditField.Limits = [0 Inf];
             app.frequencyEditField.ValueChangedFcn = createCallbackFcn(app, @frequencyEditFieldValueChanged, true);
             app.frequencyEditField.Position = [103 101 33 22];
-            app.frequencyEditField.Value = 0.04;
+            app.frequencyEditField.Value = 1;
 
             % Create HzLabel_5
             app.HzLabel_5 = uilabel(app.VoltageParametersPanel);
