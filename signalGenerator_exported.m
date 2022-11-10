@@ -5,6 +5,14 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         UIFigure                        matlab.ui.Figure
         WavesettingsPanel               matlab.ui.container.Panel
         GridLayout                      matlab.ui.container.GridLayout
+        Label_3                         matlab.ui.control.Label
+        Label_2                         matlab.ui.control.Label
+        MatsusadaLabel                  matlab.ui.control.Label
+        kVLabel_2                       matlab.ui.control.Label
+        HPosLabel                       matlab.ui.control.Label
+        KNegLabel                       matlab.ui.control.Label
+        HNegLabel                       matlab.ui.control.Label
+        KPosLabel                       matlab.ui.control.Label
         delay4EditField                 matlab.ui.control.NumericEditField
         delay4EditFieldLabel            matlab.ui.control.Label
         delay3EditField                 matlab.ui.control.NumericEditField
@@ -1080,125 +1088,176 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
             % Create GridLayout
             app.GridLayout = uigridlayout(app.WavesettingsPanel);
-            app.GridLayout.ColumnWidth = {'1x', '1x', '1x', '1x'};
+            app.GridLayout.ColumnWidth = {'fit', 'fit', 'fit', '1x', '1x', '1x'};
             app.GridLayout.RowHeight = {'1x', '1x', '1x', '1x', '1x'};
 
             % Create kVVLabel
             app.kVVLabel = uilabel(app.GridLayout);
             app.kVVLabel.HorizontalAlignment = 'center';
             app.kVVLabel.Layout.Row = 1;
-            app.kVVLabel.Layout.Column = 2;
+            app.kVVLabel.Layout.Column = 4;
             app.kVVLabel.Text = 'kV / V';
 
             % Create degLabel
             app.degLabel = uilabel(app.GridLayout);
             app.degLabel.HorizontalAlignment = 'center';
             app.degLabel.Layout.Row = 1;
-            app.degLabel.Layout.Column = 4;
+            app.degLabel.Layout.Column = 6;
             app.degLabel.Text = 'deg';
 
             % Create gain1EditFieldLabel
             app.gain1EditFieldLabel = uilabel(app.GridLayout);
             app.gain1EditFieldLabel.HorizontalAlignment = 'right';
             app.gain1EditFieldLabel.Layout.Row = 2;
-            app.gain1EditFieldLabel.Layout.Column = 1;
+            app.gain1EditFieldLabel.Layout.Column = 3;
             app.gain1EditFieldLabel.Text = 'gain 1';
 
             % Create gain1EditField
             app.gain1EditField = uieditfield(app.GridLayout, 'numeric');
             app.gain1EditField.Layout.Row = 2;
-            app.gain1EditField.Layout.Column = 2;
-            app.gain1EditField.Value = 1;
+            app.gain1EditField.Layout.Column = 4;
+            app.gain1EditField.Value = 5;
 
             % Create gain2EditFieldLabel
             app.gain2EditFieldLabel = uilabel(app.GridLayout);
             app.gain2EditFieldLabel.HorizontalAlignment = 'right';
             app.gain2EditFieldLabel.Layout.Row = 3;
-            app.gain2EditFieldLabel.Layout.Column = 1;
+            app.gain2EditFieldLabel.Layout.Column = 3;
             app.gain2EditFieldLabel.Text = 'gain 2';
 
             % Create gain2EditField
             app.gain2EditField = uieditfield(app.GridLayout, 'numeric');
             app.gain2EditField.Layout.Row = 3;
-            app.gain2EditField.Layout.Column = 2;
+            app.gain2EditField.Layout.Column = 4;
             app.gain2EditField.Value = 1;
 
             % Create gain3EditFieldLabel
             app.gain3EditFieldLabel = uilabel(app.GridLayout);
             app.gain3EditFieldLabel.HorizontalAlignment = 'right';
             app.gain3EditFieldLabel.Layout.Row = 4;
-            app.gain3EditFieldLabel.Layout.Column = 1;
+            app.gain3EditFieldLabel.Layout.Column = 3;
             app.gain3EditFieldLabel.Text = 'gain 3';
 
             % Create gain3EditField
             app.gain3EditField = uieditfield(app.GridLayout, 'numeric');
             app.gain3EditField.Layout.Row = 4;
-            app.gain3EditField.Layout.Column = 2;
+            app.gain3EditField.Layout.Column = 4;
             app.gain3EditField.Value = 1;
 
             % Create gain4EditFieldLabel
             app.gain4EditFieldLabel = uilabel(app.GridLayout);
             app.gain4EditFieldLabel.HorizontalAlignment = 'right';
             app.gain4EditFieldLabel.Layout.Row = 5;
-            app.gain4EditFieldLabel.Layout.Column = 1;
+            app.gain4EditFieldLabel.Layout.Column = 3;
             app.gain4EditFieldLabel.Text = 'gain 4';
 
             % Create gain4EditField
             app.gain4EditField = uieditfield(app.GridLayout, 'numeric');
             app.gain4EditField.Layout.Row = 5;
-            app.gain4EditField.Layout.Column = 2;
+            app.gain4EditField.Layout.Column = 4;
             app.gain4EditField.Value = 2;
 
             % Create delay1EditFieldLabel
             app.delay1EditFieldLabel = uilabel(app.GridLayout);
             app.delay1EditFieldLabel.HorizontalAlignment = 'right';
             app.delay1EditFieldLabel.Layout.Row = 2;
-            app.delay1EditFieldLabel.Layout.Column = 3;
+            app.delay1EditFieldLabel.Layout.Column = 5;
             app.delay1EditFieldLabel.Text = 'delay 1';
 
             % Create delay1EditField
             app.delay1EditField = uieditfield(app.GridLayout, 'numeric');
             app.delay1EditField.Layout.Row = 2;
-            app.delay1EditField.Layout.Column = 4;
+            app.delay1EditField.Layout.Column = 6;
 
             % Create delay2EditFieldLabel
             app.delay2EditFieldLabel = uilabel(app.GridLayout);
             app.delay2EditFieldLabel.HorizontalAlignment = 'right';
             app.delay2EditFieldLabel.Layout.Row = 3;
-            app.delay2EditFieldLabel.Layout.Column = 3;
+            app.delay2EditFieldLabel.Layout.Column = 5;
             app.delay2EditFieldLabel.Text = 'delay 2';
 
             % Create delay2EditField
             app.delay2EditField = uieditfield(app.GridLayout, 'numeric');
             app.delay2EditField.Layout.Row = 3;
-            app.delay2EditField.Layout.Column = 4;
+            app.delay2EditField.Layout.Column = 6;
             app.delay2EditField.Value = 90;
 
             % Create delay3EditFieldLabel
             app.delay3EditFieldLabel = uilabel(app.GridLayout);
             app.delay3EditFieldLabel.HorizontalAlignment = 'right';
             app.delay3EditFieldLabel.Layout.Row = 4;
-            app.delay3EditFieldLabel.Layout.Column = 3;
+            app.delay3EditFieldLabel.Layout.Column = 5;
             app.delay3EditFieldLabel.Text = 'delay 3';
 
             % Create delay3EditField
             app.delay3EditField = uieditfield(app.GridLayout, 'numeric');
             app.delay3EditField.Layout.Row = 4;
-            app.delay3EditField.Layout.Column = 4;
+            app.delay3EditField.Layout.Column = 6;
             app.delay3EditField.Value = 180;
 
             % Create delay4EditFieldLabel
             app.delay4EditFieldLabel = uilabel(app.GridLayout);
             app.delay4EditFieldLabel.HorizontalAlignment = 'right';
             app.delay4EditFieldLabel.Layout.Row = 5;
-            app.delay4EditFieldLabel.Layout.Column = 3;
+            app.delay4EditFieldLabel.Layout.Column = 5;
             app.delay4EditFieldLabel.Text = 'delay 4';
 
             % Create delay4EditField
             app.delay4EditField = uieditfield(app.GridLayout, 'numeric');
             app.delay4EditField.Layout.Row = 5;
-            app.delay4EditField.Layout.Column = 4;
+            app.delay4EditField.Layout.Column = 6;
             app.delay4EditField.Value = 270;
+
+            % Create KPosLabel
+            app.KPosLabel = uilabel(app.GridLayout);
+            app.KPosLabel.HorizontalAlignment = 'right';
+            app.KPosLabel.Layout.Row = 2;
+            app.KPosLabel.Layout.Column = 1;
+            app.KPosLabel.Text = 'K-Pos';
+
+            % Create HNegLabel
+            app.HNegLabel = uilabel(app.GridLayout);
+            app.HNegLabel.HorizontalAlignment = 'right';
+            app.HNegLabel.Layout.Row = 3;
+            app.HNegLabel.Layout.Column = 1;
+            app.HNegLabel.Text = 'H-Neg';
+
+            % Create KNegLabel
+            app.KNegLabel = uilabel(app.GridLayout);
+            app.KNegLabel.HorizontalAlignment = 'right';
+            app.KNegLabel.Layout.Row = 4;
+            app.KNegLabel.Layout.Column = 1;
+            app.KNegLabel.Text = 'K-Neg';
+
+            % Create HPosLabel
+            app.HPosLabel = uilabel(app.GridLayout);
+            app.HPosLabel.HorizontalAlignment = 'right';
+            app.HPosLabel.Layout.Row = 5;
+            app.HPosLabel.Layout.Column = 1;
+            app.HPosLabel.Text = 'H-Pos';
+
+            % Create kVLabel_2
+            app.kVLabel_2 = uilabel(app.GridLayout);
+            app.kVLabel_2.Layout.Row = 2;
+            app.kVLabel_2.Layout.Column = 2;
+            app.kVLabel_2.Text = '50kV';
+
+            % Create MatsusadaLabel
+            app.MatsusadaLabel = uilabel(app.GridLayout);
+            app.MatsusadaLabel.Layout.Row = 3;
+            app.MatsusadaLabel.Layout.Column = 2;
+            app.MatsusadaLabel.Text = 'Matsusada';
+
+            % Create Label_2
+            app.Label_2 = uilabel(app.GridLayout);
+            app.Label_2.Layout.Row = 4;
+            app.Label_2.Layout.Column = 2;
+
+            % Create Label_3
+            app.Label_3 = uilabel(app.GridLayout);
+            app.Label_3.Layout.Row = 5;
+            app.Label_3.Layout.Column = 2;
+            app.Label_3.Text = '20/20';
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
