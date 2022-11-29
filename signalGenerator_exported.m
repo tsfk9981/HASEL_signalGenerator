@@ -192,6 +192,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             totalSamples = (timeInit + timeTotal)*sampRate;
 
             signalBase = sin(time*2*pi*frequency);
+%             keyboard
             signalBase(time <= 0) = 0;
             mask = sign(signalBase);
             %             size(signalBase)
@@ -204,7 +205,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
                 case 'step'
                     voltageSignal = zeros(size(signalBase));
-                    voltageSignal(signalBase >= 0) = maxVoltage;
+                    voltageSignal(signalBase > 0) = maxVoltage;
                     voltageSignal(signalBase < 0) = -maxVoltage;
                     voltageSignal(time <= 0) = 0;
 
@@ -213,10 +214,10 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                     indDurationCycle = fix(sampRate/2/frequency);
                     while 1
                         indStart = fix(timeInit*sampRate) + i*indDurationCycle;
-                        indEnd = fix(timeInit*sampRate) + (i+1)*indDurationCycle - 1;
+                        indEnd = fix(timeInit*sampRate) + (i+1)*indDurationCycle +1;
 
-                        if indEnd <= totalSamples
-                            voltageSignal(indStart: indStart + indDurationCycle*(1-dutyRatio/100) - 1) = 0;
+                        if indEnd <= totalSamples + 1
+                            voltageSignal(indStart + fix(indDurationCycle*dutyRatio/100): min(indEnd, length(voltageSignal))) = 0;
                             i = i + 1;
                         elseif indStart <= length(voltageSignal)
                             voltageSignal(indStart: end) = 0;
@@ -232,25 +233,26 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                     i = 0;
                     indDurationCycle = fix(sampRate/2/frequency);
                     while 1
-                        indStart = fix(timeInit*sampRate) + i*indDurationCycle;
-                        indEnd = fix(timeInit*sampRate) + (i+1)*indDurationCycle - 1;
+                        indStart = fix(timeInit*sampRate) + i*indDurationCycle + 1;
+                        indEnd = fix(timeInit*sampRate) + (i+1)*indDurationCycle + 1;
 
-                        if indEnd <= totalSamples
+                        if indEnd <= totalSamples + 1
                             indDurationRamp = fix(maxVoltage/rampSpd*sampRate);
                             indDurationKeepOn = fix(indDurationCycle*dutyRatio/100);
 
                             indRampUpStart = indStart;
                             indKeepOnStart = indRampUpStart + indDurationRamp;
                             indRampDownStart = indKeepOnStart + indDurationKeepOn;
-                            indRampDownEnd = indRampDownStart + indDurationRamp - 1;
+                            indRampDownEnd = indRampDownStart + indDurationRamp;
 
                             if indRampDownEnd > indEnd
                                 error('Error: 1 cycle is longer than the cycle frequency. DecreaSE the cycle frequency or increase ramp speed.')
                             end
 
-                            voltageSignal(indRampUpStart: indKeepOnStart - 1) = linspace(0, maxVoltage, indDurationRamp);
-                            voltageSignal(indKeepOnStart: indRampDownStart - 1) = maxVoltage;
-                            voltageSignal(indRampDownStart: indRampDownEnd) = linspace(maxVoltage, 0, indDurationRamp);
+                            voltageSignal(indRampUpStart + 1: indKeepOnStart) = linspace(0, maxVoltage, indDurationRamp);
+                            voltageSignal(indKeepOnStart + 1: indRampDownStart) = maxVoltage;
+                            voltageSignal(indRampDownStart + 1: indRampDownEnd) = linspace(maxVoltage, 0, indDurationRamp);
+                            voltageSignal(indRampDownEnd + 1: min(indEnd, length(voltageSignal))) = 0;
 
                             i = i + 1;
                         elseif indStart <= length(voltageSignal)
