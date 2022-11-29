@@ -3,8 +3,36 @@ classdef signalGenerator_exported < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
+        ProcessedfilenameEditField      matlab.ui.control.EditField
+        ProcessedfilenameLabel          matlab.ui.control.Label
+        RawfileprefixEditField          matlab.ui.control.EditField
+        RawfileprefixEditFieldLabel     matlab.ui.control.Label
+        SelectfilepathEditField         matlab.ui.control.EditField
+        SelectfilepathEditFieldLabel    matlab.ui.control.Label
         WavesettingsPanel               matlab.ui.container.Panel
         GridLayout                      matlab.ui.container.GridLayout
+        rampspeed4EditField             matlab.ui.control.NumericEditField
+        rampspeed4EditFieldLabel        matlab.ui.control.Label
+        rampspeed3EditField             matlab.ui.control.NumericEditField
+        rampspeed3EditFieldLabel        matlab.ui.control.Label
+        rampspeed2EditField             matlab.ui.control.NumericEditField
+        rampspeed2EditFieldLabel        matlab.ui.control.Label
+        forrampLabel                    matlab.ui.control.Label
+        forstepLabel                    matlab.ui.control.Label
+        kVsLabel                        matlab.ui.control.Label
+        rampspeed1EditField             matlab.ui.control.NumericEditField
+        rampspeed1EditFieldLabel        matlab.ui.control.Label
+        Label                           matlab.ui.control.Label
+        dutyratio4EditField             matlab.ui.control.NumericEditField
+        dutyratio4EditFieldLabel        matlab.ui.control.Label
+        dutyratio3EditField             matlab.ui.control.NumericEditField
+        dutyratio3EditFieldLabel        matlab.ui.control.Label
+        dutyratio2EditField             matlab.ui.control.NumericEditField
+        dutyratio2EditFieldLabel        matlab.ui.control.Label
+        dutyratio1EditField             matlab.ui.control.NumericEditField
+        dutyratio1EditFieldLabel        matlab.ui.control.Label
+        HVamplifierLabel                matlab.ui.control.Label
+        muscleLabel                     matlab.ui.control.Label
         methodLabel                     matlab.ui.control.Label
         method4DropDown                 matlab.ui.control.DropDown
         method4DropDownLabel            matlab.ui.control.Label
@@ -44,50 +72,80 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         MonitorlimittripstatusCheckBox  matlab.ui.control.CheckBox
         PressStopwhentestiscompletedtosavedataLabel  matlab.ui.control.Label
         CalibrationPanel                matlab.ui.container.Panel
-        mmVLabel                        matlab.ui.control.Label
-        NVLabel                         matlab.ui.control.Label
+        GridLayout2                     matlab.ui.container.GridLayout
         MTlengthconstantkLEditField     matlab.ui.control.NumericEditField
-        MTlengthconstantkLEditFieldLabel  matlab.ui.control.Label
+        MTlengthconstantkLLabel         matlab.ui.control.Label
         MTforceconstantkFEditField      matlab.ui.control.NumericEditField
-        MTforceconstantkFEditFieldLabel  matlab.ui.control.Label
-        VkVLabel                        matlab.ui.control.Label
+        MTforceconstantkFLabel          matlab.ui.control.Label
         TREKvoltageconstantkVEditField  matlab.ui.control.NumericEditField
-        TREKvoltageconstantkVEditFieldLabel  matlab.ui.control.Label
-        HzLabel                         matlab.ui.control.Label
+        TREKvoltageconstantkVLabel      matlab.ui.control.Label
         SamplerateEditField             matlab.ui.control.NumericEditField
         SamplerateEditFieldLabel        matlab.ui.control.Label
+        mmVLabel                        matlab.ui.control.Label
+        NVLabel                         matlab.ui.control.Label
+        VkVLabel                        matlab.ui.control.Label
+        HzLabel                         matlab.ui.control.Label
         VoltageParametersPanel          matlab.ui.container.Panel
-        forrampedsquareinputLabel       matlab.ui.control.Label
-        forstepinputLabel               matlab.ui.control.Label
-        kVsLabel                        matlab.ui.control.Label
-        Label                           matlab.ui.control.Label
-        rampspeedEditField              matlab.ui.control.NumericEditField
-        rampspeedEditFieldLabel         matlab.ui.control.Label
-        dutyratioEditField              matlab.ui.control.NumericEditField
-        dutyratioEditFieldLabel         matlab.ui.control.Label
-        ReversepolarityCheckBox         matlab.ui.control.CheckBox
-        HzLabel_5                       matlab.ui.control.Label
+        GridLayout7                     matlab.ui.container.GridLayout
         frequencyEditField              matlab.ui.control.NumericEditField
         frequencyEditFieldLabel         matlab.ui.control.Label
         TotaltimeEditField              matlab.ui.control.NumericEditField
         TotaltimeEditFieldLabel         matlab.ui.control.Label
-        sLabel                          matlab.ui.control.Label
-        methodDropDown                  matlab.ui.control.DropDown
-        methodDropDownLabel             matlab.ui.control.Label
-        kVLabel                         matlab.ui.control.Label
         MaxvoltageEditField             matlab.ui.control.NumericEditField
         MaxvoltageEditFieldLabel        matlab.ui.control.Label
-        SetupPanel                      matlab.ui.container.Panel
-        ao0ao1ai0ai1ai2Label            matlab.ui.control.Label
+        ReversepolarityCheckBox         matlab.ui.control.CheckBox
+        HzLabel_5                       matlab.ui.control.Label
+        sLabel                          matlab.ui.control.Label
+        kVLabel                         matlab.ui.control.Label
         SaverawfileCheckBox             matlab.ui.control.CheckBox
-        ProcessedfilenameEditField      matlab.ui.control.EditField
-        ProcessedfilenameLabel          matlab.ui.control.Label
-        RawfileprefixEditField          matlab.ui.control.EditField
-        RawfileprefixEditFieldLabel     matlab.ui.control.Label
-        SelectfilepathEditField         matlab.ui.control.EditField
-        SelectfilepathEditFieldLabel    matlab.ui.control.Label
         GoButton                        matlab.ui.control.StateButton
         BrowseButton                    matlab.ui.control.Button
+        SetupPanel_2                    matlab.ui.container.Panel
+        GridLayout4                     matlab.ui.container.GridLayout
+        GridLayout6                     matlab.ui.container.GridLayout
+        kneeLabel                       matlab.ui.control.Label
+        encoderLabel_2                  matlab.ui.control.Label
+        AI17Label                       matlab.ui.control.Label
+        hipLabel                        matlab.ui.control.Label
+        encoderLabel                    matlab.ui.control.Label
+        AI16Label                       matlab.ui.control.Label
+        currentmonitorLabel_4           matlab.ui.control.Label
+        Trek4Label_3                    matlab.ui.control.Label
+        AI7Label                        matlab.ui.control.Label
+        voltagemonitorLabel_11          matlab.ui.control.Label
+        Trek4Label_2                    matlab.ui.control.Label
+        AI6Label                        matlab.ui.control.Label
+        currentmonitorLabel_3           matlab.ui.control.Label
+        Trek3Label_3                    matlab.ui.control.Label
+        AI5Label                        matlab.ui.control.Label
+        voltagemonitorLabel_10          matlab.ui.control.Label
+        Trek3Label_2                    matlab.ui.control.Label
+        AI4Label                        matlab.ui.control.Label
+        currentmonitorLabel_2           matlab.ui.control.Label
+        Trek2Label_3                    matlab.ui.control.Label
+        AI3Label                        matlab.ui.control.Label
+        voltagemonitorLabel_9           matlab.ui.control.Label
+        Trek2Label_2                    matlab.ui.control.Label
+        AI2Label                        matlab.ui.control.Label
+        currentmonitorLabel             matlab.ui.control.Label
+        Trek1Label_15                   matlab.ui.control.Label
+        AI1Label                        matlab.ui.control.Label
+        voltagemonitorLabel_8           matlab.ui.control.Label
+        Trek1Label_14                   matlab.ui.control.Label
+        AI0Label_8                      matlab.ui.control.Label
+        GridLayout5                     matlab.ui.container.GridLayout
+        voltageinLabel_4                matlab.ui.control.Label
+        Trek4Label                      matlab.ui.control.Label
+        voltageinLabel_3                matlab.ui.control.Label
+        Trek3Label                      matlab.ui.control.Label
+        voltageinLabel_2                matlab.ui.control.Label
+        Trek2Label                      matlab.ui.control.Label
+        voltageinLabel                  matlab.ui.control.Label
+        Trek1Label_22                   matlab.ui.control.Label
+        AO0Label_2                      matlab.ui.control.Label
+        AO3Label_2                      matlab.ui.control.Label
+        AO2Label_2                      matlab.ui.control.Label
+        AO1Label_2                      matlab.ui.control.Label
         UIAxes                          matlab.ui.control.UIAxes
     end
 
@@ -105,10 +163,10 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             time = [-timeInit: 1/sampRate: timeTotal - 1/sampRate]';
 
 
-            voltageSignal_1 = createBaseSignal(app, app.method1DropDown.Value, time, timeInit);
-            voltageSignal_2 = createBaseSignal(app, app.method2DropDown.Value, time, timeInit);
-            voltageSignal_3 = createBaseSignal(app, app.method3DropDown.Value, time, timeInit);
-            voltageSignal_4 = createBaseSignal(app, app.method4DropDown.Value, time, timeInit);
+            voltageSignal_1 = createBaseSignal(app, app.method1DropDown.Value, app.dutyratio1EditField.Value, app.rampspeed1EditField.Value, time, timeInit);
+            voltageSignal_2 = createBaseSignal(app, app.method2DropDown.Value, app.dutyratio2EditField.Value, app.rampspeed2EditField.Value, time, timeInit);
+            voltageSignal_3 = createBaseSignal(app, app.method3DropDown.Value, app.dutyratio3EditField.Value, app.rampspeed3EditField.Value, time, timeInit);
+            voltageSignal_4 = createBaseSignal(app, app.method4DropDown.Value, app.dutyratio4EditField.Value, app.rampspeed4EditField.Value, time, timeInit);
 
             voltageSignal_1 = shiftPhase(app, voltageSignal_1, app.delay1EditField.Value, timeInit)/app.gain1EditField.Value;
             voltageSignal_2 = shiftPhase(app, voltageSignal_2, app.delay2EditField.Value, timeInit)/app.gain2EditField.Value;
@@ -123,12 +181,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             fullSignal = [time, refSignal, voltageSignal_1, voltageSignal_2, voltageSignal_3, voltageSignal_4];
         end
 
-        function Out = createBaseSignal(app, method, time, timeInit)
+        function Out = createBaseSignal(app, method, dutyRatio, rampSpd, time, timeInit)
             global kV
             sampRate = app.SamplerateEditField.Value;
             frequency = app.frequencyEditField.Value/2;
             maxVoltage = app.MaxvoltageEditField.Value/kV;
-            dutyRatio = app.dutyratioEditField.Value;
             timeTotal = app.TotaltimeEditField.Value;
             totalSamples = (timeInit + timeTotal)*sampRate;
 
@@ -168,7 +225,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                     end
 
                 case 'ramped square'
-                    rampSpd = app.rampspeedEditField.Value;
 
                     voltageSignal = zeros(size(signalBase));
                     i = 0;
@@ -568,8 +624,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                         num2str(app.MaxvoltageEditField.Value*10,   '%02.0f'), 'kV_',...
                         num2str(app.frequencyEditField.Value*10, '%03.0f'), 'Hz_',...
                         num2str(app.SamplerateEditField.Value,   '%04.0f'), 'Hz_',...
-                        num2str(app.dutyratioEditField.Value,    '%03.0f'), 'duty_',...
-                        num2str(app.rampspeedEditField.Value,    '%03.0f'), 'kVs'];
+                        num2str(app.dutyratio1EditField.Value,    '%03.0f'), 'duty_',...
+                        num2str(app.rampspeed1EditField.Value,    '%03.0f'), 'kVs'];
                     rawFilename = fullfile(app.SelectfilepathEditField.Value,...
                         [app.RawfileprefixEditField.Value, app.ProcessedfilenameEditField.Value, '_', textPara, datestr(now,'_yyyy_mm_dd_HHMM'), '.dat']);
 
@@ -709,7 +765,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             end
         end
 
-        % Value changed function: methodDropDown
+        % Callback function
         function methodDropDownValueChanged(app, event)
             switch app.methodDropDown.Value
                 case 'logarithmic'
@@ -738,8 +794,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             buildPreview(app);
         end
 
-        % Value changed function: dutyratioEditField
-        function dutyratioEditFieldValueChanged(app, event)
+        % Value changed function: dutyratio1EditField
+        function dutyratio1EditFieldValueChanged(app, event)
             buildPreview(app);
         end
 
@@ -748,8 +804,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             buildPreview(app);
         end
 
-        % Value changed function: rampspeedEditField
-        function rampspeedEditFieldValueChanged(app, event)
+        % Value changed function: rampspeed1EditField
+        function rampspeed1EditFieldValueChanged(app, event)
             buildPreview(app);
         end
 
@@ -812,6 +868,36 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function method4DropDownValueChanged(app, event)
             buildPreview(app);
         end
+
+        % Value changed function: dutyratio2EditField
+        function dutyratio2EditFieldValueChanged(app, event)
+            buildPreview(app);            
+        end
+
+        % Value changed function: dutyratio3EditField
+        function dutyratio3EditFieldValueChanged(app, event)
+            buildPreview(app);            
+        end
+
+        % Value changed function: dutyratio4EditField
+        function dutyratio4EditFieldValueChanged(app, event)
+            buildPreview(app);            
+        end
+
+        % Value changed function: rampspeed2EditField
+        function rampspeed2EditFieldValueChanged(app, event)
+            buildPreview(app);            
+        end
+
+        % Value changed function: rampspeed3EditField
+        function rampspeed3EditFieldValueChanged(app, event)
+            buildPreview(app);
+        end
+
+        % Value changed function: rampspeed4EditField
+        function rampspeed4EditFieldValueChanged(app, event)
+            buildPreview(app);            
+        end
     end
 
     % Component initialization
@@ -822,7 +908,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
             % Create UIFigure and hide until all components are created
             app.UIFigure = uifigure('Visible', 'off');
-            app.UIFigure.Position = [100 100 813 681];
+            app.UIFigure.Position = [100 100 983 681];
             app.UIFigure.Name = 'MATLAB App';
 
             % Create UIAxes
@@ -835,6 +921,285 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.UIAxes.YTickLabelRotation = 0;
             app.UIAxes.ZTickLabelRotation = 0;
             app.UIAxes.Position = [24 393 404 278];
+
+            % Create SetupPanel_2
+            app.SetupPanel_2 = uipanel(app.UIFigure);
+            app.SetupPanel_2.TitlePosition = 'centertop';
+            app.SetupPanel_2.Title = 'Setup';
+            app.SetupPanel_2.FontWeight = 'bold';
+            app.SetupPanel_2.FontSize = 14;
+            app.SetupPanel_2.Position = [-353 132 231 494];
+
+            % Create GridLayout4
+            app.GridLayout4 = uigridlayout(app.SetupPanel_2);
+            app.GridLayout4.ColumnWidth = {'1x'};
+            app.GridLayout4.RowHeight = {'fit', '1x'};
+
+            % Create GridLayout5
+            app.GridLayout5 = uigridlayout(app.GridLayout4);
+            app.GridLayout5.ColumnWidth = {'fit', 'fit', 'fit'};
+            app.GridLayout5.RowHeight = {'1x', '1x', '1x', '1x'};
+            app.GridLayout5.Layout.Row = 1;
+            app.GridLayout5.Layout.Column = 1;
+
+            % Create AO1Label_2
+            app.AO1Label_2 = uilabel(app.GridLayout5);
+            app.AO1Label_2.Layout.Row = 1;
+            app.AO1Label_2.Layout.Column = 1;
+            app.AO1Label_2.Text = 'AO1';
+
+            % Create AO2Label_2
+            app.AO2Label_2 = uilabel(app.GridLayout5);
+            app.AO2Label_2.Layout.Row = 2;
+            app.AO2Label_2.Layout.Column = 1;
+            app.AO2Label_2.Text = 'AO2';
+
+            % Create AO3Label_2
+            app.AO3Label_2 = uilabel(app.GridLayout5);
+            app.AO3Label_2.Layout.Row = 3;
+            app.AO3Label_2.Layout.Column = 1;
+            app.AO3Label_2.Text = 'AO3';
+
+            % Create AO0Label_2
+            app.AO0Label_2 = uilabel(app.GridLayout5);
+            app.AO0Label_2.Layout.Row = 4;
+            app.AO0Label_2.Layout.Column = 1;
+            app.AO0Label_2.Text = 'AO0';
+
+            % Create Trek1Label_22
+            app.Trek1Label_22 = uilabel(app.GridLayout5);
+            app.Trek1Label_22.Layout.Row = 1;
+            app.Trek1Label_22.Layout.Column = 2;
+            app.Trek1Label_22.Text = 'Trek 1';
+
+            % Create voltageinLabel
+            app.voltageinLabel = uilabel(app.GridLayout5);
+            app.voltageinLabel.Layout.Row = 1;
+            app.voltageinLabel.Layout.Column = 3;
+            app.voltageinLabel.Text = 'voltage in';
+
+            % Create Trek2Label
+            app.Trek2Label = uilabel(app.GridLayout5);
+            app.Trek2Label.Layout.Row = 2;
+            app.Trek2Label.Layout.Column = 2;
+            app.Trek2Label.Text = 'Trek 2';
+
+            % Create voltageinLabel_2
+            app.voltageinLabel_2 = uilabel(app.GridLayout5);
+            app.voltageinLabel_2.Layout.Row = 2;
+            app.voltageinLabel_2.Layout.Column = 3;
+            app.voltageinLabel_2.Text = 'voltage in';
+
+            % Create Trek3Label
+            app.Trek3Label = uilabel(app.GridLayout5);
+            app.Trek3Label.Layout.Row = 3;
+            app.Trek3Label.Layout.Column = 2;
+            app.Trek3Label.Text = 'Trek 3';
+
+            % Create voltageinLabel_3
+            app.voltageinLabel_3 = uilabel(app.GridLayout5);
+            app.voltageinLabel_3.Layout.Row = 3;
+            app.voltageinLabel_3.Layout.Column = 3;
+            app.voltageinLabel_3.Text = 'voltage in';
+
+            % Create Trek4Label
+            app.Trek4Label = uilabel(app.GridLayout5);
+            app.Trek4Label.Layout.Row = 4;
+            app.Trek4Label.Layout.Column = 2;
+            app.Trek4Label.Text = 'Trek 4';
+
+            % Create voltageinLabel_4
+            app.voltageinLabel_4 = uilabel(app.GridLayout5);
+            app.voltageinLabel_4.Layout.Row = 4;
+            app.voltageinLabel_4.Layout.Column = 3;
+            app.voltageinLabel_4.Text = 'voltage in';
+
+            % Create GridLayout6
+            app.GridLayout6 = uigridlayout(app.GridLayout4);
+            app.GridLayout6.ColumnWidth = {'fit', 'fit', 'fit'};
+            app.GridLayout6.RowHeight = {'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
+            app.GridLayout6.Layout.Row = 2;
+            app.GridLayout6.Layout.Column = 1;
+
+            % Create AI0Label_8
+            app.AI0Label_8 = uilabel(app.GridLayout6);
+            app.AI0Label_8.Layout.Row = 1;
+            app.AI0Label_8.Layout.Column = 1;
+            app.AI0Label_8.Text = 'AI0';
+
+            % Create Trek1Label_14
+            app.Trek1Label_14 = uilabel(app.GridLayout6);
+            app.Trek1Label_14.Layout.Row = 1;
+            app.Trek1Label_14.Layout.Column = 2;
+            app.Trek1Label_14.Text = 'Trek 1';
+
+            % Create voltagemonitorLabel_8
+            app.voltagemonitorLabel_8 = uilabel(app.GridLayout6);
+            app.voltagemonitorLabel_8.Layout.Row = 1;
+            app.voltagemonitorLabel_8.Layout.Column = 3;
+            app.voltagemonitorLabel_8.Text = 'voltage monitor';
+
+            % Create AI1Label
+            app.AI1Label = uilabel(app.GridLayout6);
+            app.AI1Label.Layout.Row = 2;
+            app.AI1Label.Layout.Column = 1;
+            app.AI1Label.Text = 'AI1';
+
+            % Create Trek1Label_15
+            app.Trek1Label_15 = uilabel(app.GridLayout6);
+            app.Trek1Label_15.Layout.Row = 2;
+            app.Trek1Label_15.Layout.Column = 2;
+            app.Trek1Label_15.Text = 'Trek 1';
+
+            % Create currentmonitorLabel
+            app.currentmonitorLabel = uilabel(app.GridLayout6);
+            app.currentmonitorLabel.Layout.Row = 2;
+            app.currentmonitorLabel.Layout.Column = 3;
+            app.currentmonitorLabel.Text = 'current monitor';
+
+            % Create AI2Label
+            app.AI2Label = uilabel(app.GridLayout6);
+            app.AI2Label.Layout.Row = 3;
+            app.AI2Label.Layout.Column = 1;
+            app.AI2Label.Text = 'AI2';
+
+            % Create Trek2Label_2
+            app.Trek2Label_2 = uilabel(app.GridLayout6);
+            app.Trek2Label_2.Layout.Row = 3;
+            app.Trek2Label_2.Layout.Column = 2;
+            app.Trek2Label_2.Text = 'Trek 2';
+
+            % Create voltagemonitorLabel_9
+            app.voltagemonitorLabel_9 = uilabel(app.GridLayout6);
+            app.voltagemonitorLabel_9.Layout.Row = 3;
+            app.voltagemonitorLabel_9.Layout.Column = 3;
+            app.voltagemonitorLabel_9.Text = 'voltage monitor';
+
+            % Create AI3Label
+            app.AI3Label = uilabel(app.GridLayout6);
+            app.AI3Label.Layout.Row = 4;
+            app.AI3Label.Layout.Column = 1;
+            app.AI3Label.Text = 'AI3';
+
+            % Create Trek2Label_3
+            app.Trek2Label_3 = uilabel(app.GridLayout6);
+            app.Trek2Label_3.Layout.Row = 4;
+            app.Trek2Label_3.Layout.Column = 2;
+            app.Trek2Label_3.Text = 'Trek 2';
+
+            % Create currentmonitorLabel_2
+            app.currentmonitorLabel_2 = uilabel(app.GridLayout6);
+            app.currentmonitorLabel_2.Layout.Row = 4;
+            app.currentmonitorLabel_2.Layout.Column = 3;
+            app.currentmonitorLabel_2.Text = 'current monitor';
+
+            % Create AI4Label
+            app.AI4Label = uilabel(app.GridLayout6);
+            app.AI4Label.Layout.Row = 5;
+            app.AI4Label.Layout.Column = 1;
+            app.AI4Label.Text = 'AI4';
+
+            % Create Trek3Label_2
+            app.Trek3Label_2 = uilabel(app.GridLayout6);
+            app.Trek3Label_2.Layout.Row = 5;
+            app.Trek3Label_2.Layout.Column = 2;
+            app.Trek3Label_2.Text = 'Trek 3';
+
+            % Create voltagemonitorLabel_10
+            app.voltagemonitorLabel_10 = uilabel(app.GridLayout6);
+            app.voltagemonitorLabel_10.Layout.Row = 5;
+            app.voltagemonitorLabel_10.Layout.Column = 3;
+            app.voltagemonitorLabel_10.Text = 'voltage monitor';
+
+            % Create AI5Label
+            app.AI5Label = uilabel(app.GridLayout6);
+            app.AI5Label.Layout.Row = 6;
+            app.AI5Label.Layout.Column = 1;
+            app.AI5Label.Text = 'AI5';
+
+            % Create Trek3Label_3
+            app.Trek3Label_3 = uilabel(app.GridLayout6);
+            app.Trek3Label_3.Layout.Row = 6;
+            app.Trek3Label_3.Layout.Column = 2;
+            app.Trek3Label_3.Text = 'Trek 3';
+
+            % Create currentmonitorLabel_3
+            app.currentmonitorLabel_3 = uilabel(app.GridLayout6);
+            app.currentmonitorLabel_3.Layout.Row = 6;
+            app.currentmonitorLabel_3.Layout.Column = 3;
+            app.currentmonitorLabel_3.Text = 'current monitor';
+
+            % Create AI6Label
+            app.AI6Label = uilabel(app.GridLayout6);
+            app.AI6Label.Layout.Row = 7;
+            app.AI6Label.Layout.Column = 1;
+            app.AI6Label.Text = 'AI6';
+
+            % Create Trek4Label_2
+            app.Trek4Label_2 = uilabel(app.GridLayout6);
+            app.Trek4Label_2.Layout.Row = 7;
+            app.Trek4Label_2.Layout.Column = 2;
+            app.Trek4Label_2.Text = 'Trek 4';
+
+            % Create voltagemonitorLabel_11
+            app.voltagemonitorLabel_11 = uilabel(app.GridLayout6);
+            app.voltagemonitorLabel_11.Layout.Row = 7;
+            app.voltagemonitorLabel_11.Layout.Column = 3;
+            app.voltagemonitorLabel_11.Text = 'voltage monitor';
+
+            % Create AI7Label
+            app.AI7Label = uilabel(app.GridLayout6);
+            app.AI7Label.Layout.Row = 8;
+            app.AI7Label.Layout.Column = 1;
+            app.AI7Label.Text = 'AI7';
+
+            % Create Trek4Label_3
+            app.Trek4Label_3 = uilabel(app.GridLayout6);
+            app.Trek4Label_3.Layout.Row = 8;
+            app.Trek4Label_3.Layout.Column = 2;
+            app.Trek4Label_3.Text = 'Trek 4';
+
+            % Create currentmonitorLabel_4
+            app.currentmonitorLabel_4 = uilabel(app.GridLayout6);
+            app.currentmonitorLabel_4.Layout.Row = 8;
+            app.currentmonitorLabel_4.Layout.Column = 3;
+            app.currentmonitorLabel_4.Text = 'current monitor';
+
+            % Create AI16Label
+            app.AI16Label = uilabel(app.GridLayout6);
+            app.AI16Label.Layout.Row = 9;
+            app.AI16Label.Layout.Column = 1;
+            app.AI16Label.Text = 'AI16';
+
+            % Create encoderLabel
+            app.encoderLabel = uilabel(app.GridLayout6);
+            app.encoderLabel.Layout.Row = 9;
+            app.encoderLabel.Layout.Column = 2;
+            app.encoderLabel.Text = 'encoder';
+
+            % Create hipLabel
+            app.hipLabel = uilabel(app.GridLayout6);
+            app.hipLabel.Layout.Row = 9;
+            app.hipLabel.Layout.Column = 3;
+            app.hipLabel.Text = 'hip';
+
+            % Create AI17Label
+            app.AI17Label = uilabel(app.GridLayout6);
+            app.AI17Label.Layout.Row = 10;
+            app.AI17Label.Layout.Column = 1;
+            app.AI17Label.Text = 'AI17';
+
+            % Create encoderLabel_2
+            app.encoderLabel_2 = uilabel(app.GridLayout6);
+            app.encoderLabel_2.Layout.Row = 10;
+            app.encoderLabel_2.Layout.Column = 2;
+            app.encoderLabel_2.Text = 'encoder';
+
+            % Create kneeLabel
+            app.kneeLabel = uilabel(app.GridLayout6);
+            app.kneeLabel.Layout.Row = 10;
+            app.kneeLabel.Layout.Column = 3;
+            app.kneeLabel.Text = 'knee';
 
             % Create BrowseButton
             app.BrowseButton = uibutton(app.UIFigure, 'push');
@@ -849,42 +1214,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.GoButton.BackgroundColor = [0.9608 0.9608 0.9608];
             app.GoButton.FontSize = 24;
             app.GoButton.FontWeight = 'bold';
-            app.GoButton.Position = [641 445 146 53];
-
-            % Create SelectfilepathEditFieldLabel
-            app.SelectfilepathEditFieldLabel = uilabel(app.UIFigure);
-            app.SelectfilepathEditFieldLabel.HorizontalAlignment = 'right';
-            app.SelectfilepathEditFieldLabel.Position = [584 641 101 22];
-            app.SelectfilepathEditFieldLabel.Text = 'Select file path:';
-
-            % Create SelectfilepathEditField
-            app.SelectfilepathEditField = uieditfield(app.UIFigure, 'text');
-            app.SelectfilepathEditField.Position = [533 611 268 22];
-            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator';
-
-            % Create RawfileprefixEditFieldLabel
-            app.RawfileprefixEditFieldLabel = uilabel(app.UIFigure);
-            app.RawfileprefixEditFieldLabel.HorizontalAlignment = 'right';
-            app.RawfileprefixEditFieldLabel.Enable = 'off';
-            app.RawfileprefixEditFieldLabel.Position = [533 542 81 22];
-            app.RawfileprefixEditFieldLabel.Text = 'Raw file prefix';
-
-            % Create RawfileprefixEditField
-            app.RawfileprefixEditField = uieditfield(app.UIFigure, 'text');
-            app.RawfileprefixEditField.Enable = 'off';
-            app.RawfileprefixEditField.Position = [626 542 173 22];
-            app.RawfileprefixEditField.Value = 'raw_';
-
-            % Create ProcessedfilenameLabel
-            app.ProcessedfilenameLabel = uilabel(app.UIFigure);
-            app.ProcessedfilenameLabel.HorizontalAlignment = 'right';
-            app.ProcessedfilenameLabel.Position = [502 577 114 22];
-            app.ProcessedfilenameLabel.Text = 'Processed filename:';
-
-            % Create ProcessedfilenameEditField
-            app.ProcessedfilenameEditField = uieditfield(app.UIFigure, 'text');
-            app.ProcessedfilenameEditField.Position = [628 577 173 22];
-            app.ProcessedfilenameEditField.Value = 'selfSensing';
+            app.GoButton.Position = [653 445 146 53];
 
             % Create SaverawfileCheckBox
             app.SaverawfileCheckBox = uicheckbox(app.UIFigure);
@@ -893,148 +1223,91 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.SaverawfileCheckBox.Position = [707 511 90 22];
             app.SaverawfileCheckBox.Value = true;
 
-            % Create SetupPanel
-            app.SetupPanel = uipanel(app.UIFigure);
-            app.SetupPanel.TitlePosition = 'centertop';
-            app.SetupPanel.Title = 'Setup';
-            app.SetupPanel.FontWeight = 'bold';
-            app.SetupPanel.FontSize = 14;
-            app.SetupPanel.Position = [24 21 187 373];
-
-            % Create ao0ao1ai0ai1ai2Label
-            app.ao0ao1ai0ai1ai2Label = uilabel(app.SetupPanel);
-            app.ao0ao1ai0ai1ai2Label.Position = [4 87 180 266];
-            app.ao0ao1ai0ai1ai2Label.Text = {'AO0: TREK 1 "voltage in"'; 'AO1: TREK 2 "voltage in"'; 'AO2: TREK 3 "voltage in"'; 'AO3: TREK 4 "voltage in"'; ''; ''; ''; 'AI0: TREK 1 "voltage monitor"'; 'AI1: TREK 1 "current monitor"'; 'AI2: TREK 2 "voltage monitor"'; 'AI3: TREK 2 "current monitor"'; 'AI4: TREK 3 "voltage monitor"'; 'AI5: TREK 3 "current monitor"'; 'AI6: TREK 4 "voltage monitor"'; 'AI7: TREK 4 "current monitor"'; ''; ''; 'AI16: hip encoder'; 'A17: knee encoder'};
-
             % Create VoltageParametersPanel
             app.VoltageParametersPanel = uipanel(app.UIFigure);
             app.VoltageParametersPanel.TitlePosition = 'centertop';
             app.VoltageParametersPanel.Title = 'Voltage Parameters';
             app.VoltageParametersPanel.FontWeight = 'bold';
             app.VoltageParametersPanel.FontSize = 14;
-            app.VoltageParametersPanel.Position = [414 208 382 186];
+            app.VoltageParametersPanel.Position = [748 216 211 163];
 
-            % Create MaxvoltageEditFieldLabel
-            app.MaxvoltageEditFieldLabel = uilabel(app.VoltageParametersPanel);
-            app.MaxvoltageEditFieldLabel.HorizontalAlignment = 'right';
-            app.MaxvoltageEditFieldLabel.Position = [193 134 70 22];
-            app.MaxvoltageEditFieldLabel.Text = 'Max voltage';
-
-            % Create MaxvoltageEditField
-            app.MaxvoltageEditField = uieditfield(app.VoltageParametersPanel, 'numeric');
-            app.MaxvoltageEditField.Limits = [0 20];
-            app.MaxvoltageEditField.ValueChangedFcn = createCallbackFcn(app, @MaxvoltageEditFieldValueChanged, true);
-            app.MaxvoltageEditField.Position = [273 134 31 22];
-            app.MaxvoltageEditField.Value = 6;
+            % Create GridLayout7
+            app.GridLayout7 = uigridlayout(app.VoltageParametersPanel);
+            app.GridLayout7.ColumnWidth = {'fit', '1x', 'fit'};
+            app.GridLayout7.RowHeight = {'1x', '1x', '1x', '1x'};
+            app.GridLayout7.ColumnSpacing = 10.125;
+            app.GridLayout7.Padding = [10.125 10 10.125 10];
 
             % Create kVLabel
-            app.kVLabel = uilabel(app.VoltageParametersPanel);
-            app.kVLabel.Position = [307 134 25 22];
+            app.kVLabel = uilabel(app.GridLayout7);
+            app.kVLabel.Layout.Row = 3;
+            app.kVLabel.Layout.Column = 3;
             app.kVLabel.Text = 'kV';
 
-            % Create methodDropDownLabel
-            app.methodDropDownLabel = uilabel(app.VoltageParametersPanel);
-            app.methodDropDownLabel.HorizontalAlignment = 'right';
-            app.methodDropDownLabel.Position = [193 98 45 28];
-            app.methodDropDownLabel.Text = 'method';
-
-            % Create methodDropDown
-            app.methodDropDown = uidropdown(app.VoltageParametersPanel);
-            app.methodDropDown.Items = {'step', 'sine', 'ramped square'};
-            app.methodDropDown.ValueChangedFcn = createCallbackFcn(app, @methodDropDownValueChanged, true);
-            app.methodDropDown.Position = [245 101 124 22];
-            app.methodDropDown.Value = 'sine';
-
             % Create sLabel
-            app.sLabel = uilabel(app.VoltageParametersPanel);
-            app.sLabel.Position = [138 134 25 22];
+            app.sLabel = uilabel(app.GridLayout7);
+            app.sLabel.Layout.Row = 1;
+            app.sLabel.Layout.Column = 3;
             app.sLabel.Text = 's';
 
-            % Create TotaltimeEditFieldLabel
-            app.TotaltimeEditFieldLabel = uilabel(app.VoltageParametersPanel);
-            app.TotaltimeEditFieldLabel.HorizontalAlignment = 'right';
-            app.TotaltimeEditFieldLabel.Position = [20 132 75 22];
-            app.TotaltimeEditFieldLabel.Text = 'Total time';
-
-            % Create TotaltimeEditField
-            app.TotaltimeEditField = uieditfield(app.VoltageParametersPanel, 'numeric');
-            app.TotaltimeEditField.Limits = [0 Inf];
-            app.TotaltimeEditField.ValueChangedFcn = createCallbackFcn(app, @TotaltimeEditFieldValueChanged, true);
-            app.TotaltimeEditField.Position = [103 132 33 22];
-            app.TotaltimeEditField.Value = 8;
-
-            % Create frequencyEditFieldLabel
-            app.frequencyEditFieldLabel = uilabel(app.VoltageParametersPanel);
-            app.frequencyEditFieldLabel.HorizontalAlignment = 'right';
-            app.frequencyEditFieldLabel.Position = [-19 101 114 22];
-            app.frequencyEditFieldLabel.Text = 'frequency';
-
-            % Create frequencyEditField
-            app.frequencyEditField = uieditfield(app.VoltageParametersPanel, 'numeric');
-            app.frequencyEditField.Limits = [0 Inf];
-            app.frequencyEditField.ValueChangedFcn = createCallbackFcn(app, @frequencyEditFieldValueChanged, true);
-            app.frequencyEditField.Position = [103 101 33 22];
-            app.frequencyEditField.Value = 2;
-
             % Create HzLabel_5
-            app.HzLabel_5 = uilabel(app.VoltageParametersPanel);
-            app.HzLabel_5.Position = [138 101 25 22];
+            app.HzLabel_5 = uilabel(app.GridLayout7);
+            app.HzLabel_5.Layout.Row = 2;
+            app.HzLabel_5.Layout.Column = 3;
             app.HzLabel_5.Text = 'Hz';
 
             % Create ReversepolarityCheckBox
-            app.ReversepolarityCheckBox = uicheckbox(app.VoltageParametersPanel);
+            app.ReversepolarityCheckBox = uicheckbox(app.GridLayout7);
             app.ReversepolarityCheckBox.ValueChangedFcn = createCallbackFcn(app, @ReversepolarityCheckBoxValueChanged, true);
             app.ReversepolarityCheckBox.Text = 'Reverse polarity';
-            app.ReversepolarityCheckBox.Position = [244 71 109 22];
+            app.ReversepolarityCheckBox.Layout.Row = 4;
+            app.ReversepolarityCheckBox.Layout.Column = [2 3];
             app.ReversepolarityCheckBox.Value = true;
 
-            % Create dutyratioEditFieldLabel
-            app.dutyratioEditFieldLabel = uilabel(app.VoltageParametersPanel);
-            app.dutyratioEditFieldLabel.HorizontalAlignment = 'right';
-            app.dutyratioEditFieldLabel.Position = [20 13 75 22];
-            app.dutyratioEditFieldLabel.Text = 'duty ratio';
+            % Create MaxvoltageEditFieldLabel
+            app.MaxvoltageEditFieldLabel = uilabel(app.GridLayout7);
+            app.MaxvoltageEditFieldLabel.HorizontalAlignment = 'right';
+            app.MaxvoltageEditFieldLabel.Layout.Row = 3;
+            app.MaxvoltageEditFieldLabel.Layout.Column = 1;
+            app.MaxvoltageEditFieldLabel.Text = 'Max voltage';
 
-            % Create dutyratioEditField
-            app.dutyratioEditField = uieditfield(app.VoltageParametersPanel, 'numeric');
-            app.dutyratioEditField.Limits = [0 Inf];
-            app.dutyratioEditField.ValueChangedFcn = createCallbackFcn(app, @dutyratioEditFieldValueChanged, true);
-            app.dutyratioEditField.Position = [103 13 33 22];
-            app.dutyratioEditField.Value = 50;
+            % Create MaxvoltageEditField
+            app.MaxvoltageEditField = uieditfield(app.GridLayout7, 'numeric');
+            app.MaxvoltageEditField.Limits = [0 20];
+            app.MaxvoltageEditField.ValueChangedFcn = createCallbackFcn(app, @MaxvoltageEditFieldValueChanged, true);
+            app.MaxvoltageEditField.Layout.Row = 3;
+            app.MaxvoltageEditField.Layout.Column = 2;
+            app.MaxvoltageEditField.Value = 6;
 
-            % Create rampspeedEditFieldLabel
-            app.rampspeedEditFieldLabel = uilabel(app.VoltageParametersPanel);
-            app.rampspeedEditFieldLabel.HorizontalAlignment = 'right';
-            app.rampspeedEditFieldLabel.Position = [194 13 75 22];
-            app.rampspeedEditFieldLabel.Text = 'ramp speed';
+            % Create TotaltimeEditFieldLabel
+            app.TotaltimeEditFieldLabel = uilabel(app.GridLayout7);
+            app.TotaltimeEditFieldLabel.HorizontalAlignment = 'right';
+            app.TotaltimeEditFieldLabel.Layout.Row = 1;
+            app.TotaltimeEditFieldLabel.Layout.Column = 1;
+            app.TotaltimeEditFieldLabel.Text = 'Total time';
 
-            % Create rampspeedEditField
-            app.rampspeedEditField = uieditfield(app.VoltageParametersPanel, 'numeric');
-            app.rampspeedEditField.Limits = [0 Inf];
-            app.rampspeedEditField.ValueChangedFcn = createCallbackFcn(app, @rampspeedEditFieldValueChanged, true);
-            app.rampspeedEditField.Position = [276 13 33 22];
-            app.rampspeedEditField.Value = 5;
+            % Create TotaltimeEditField
+            app.TotaltimeEditField = uieditfield(app.GridLayout7, 'numeric');
+            app.TotaltimeEditField.Limits = [0 Inf];
+            app.TotaltimeEditField.ValueChangedFcn = createCallbackFcn(app, @TotaltimeEditFieldValueChanged, true);
+            app.TotaltimeEditField.Layout.Row = 1;
+            app.TotaltimeEditField.Layout.Column = 2;
+            app.TotaltimeEditField.Value = 8;
 
-            % Create Label
-            app.Label = uilabel(app.VoltageParametersPanel);
-            app.Label.Position = [138 13 25 22];
-            app.Label.Text = '%';
+            % Create frequencyEditFieldLabel
+            app.frequencyEditFieldLabel = uilabel(app.GridLayout7);
+            app.frequencyEditFieldLabel.HorizontalAlignment = 'right';
+            app.frequencyEditFieldLabel.Layout.Row = 2;
+            app.frequencyEditFieldLabel.Layout.Column = 1;
+            app.frequencyEditFieldLabel.Text = 'frequency';
 
-            % Create kVsLabel
-            app.kVsLabel = uilabel(app.VoltageParametersPanel);
-            app.kVsLabel.Position = [310 13 29 22];
-            app.kVsLabel.Text = 'kV/s';
-
-            % Create forstepinputLabel
-            app.forstepinputLabel = uilabel(app.VoltageParametersPanel);
-            app.forstepinputLabel.FontWeight = 'bold';
-            app.forstepinputLabel.Position = [50 34 82 22];
-            app.forstepinputLabel.Text = 'for step input';
-
-            % Create forrampedsquareinputLabel
-            app.forrampedsquareinputLabel = uilabel(app.VoltageParametersPanel);
-            app.forrampedsquareinputLabel.FontWeight = 'bold';
-            app.forrampedsquareinputLabel.Position = [204 34 144 22];
-            app.forrampedsquareinputLabel.Text = 'for ramped square input';
+            % Create frequencyEditField
+            app.frequencyEditField = uieditfield(app.GridLayout7, 'numeric');
+            app.frequencyEditField.Limits = [0 Inf];
+            app.frequencyEditField.ValueChangedFcn = createCallbackFcn(app, @frequencyEditFieldValueChanged, true);
+            app.frequencyEditField.Layout.Row = 2;
+            app.frequencyEditField.Layout.Column = 2;
+            app.frequencyEditField.Value = 2;
 
             % Create CalibrationPanel
             app.CalibrationPanel = uipanel(app.UIFigure);
@@ -1042,88 +1315,108 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.CalibrationPanel.Title = 'Calibration';
             app.CalibrationPanel.FontWeight = 'bold';
             app.CalibrationPanel.FontSize = 14;
-            app.CalibrationPanel.Position = [218 208 187 186];
+            app.CalibrationPanel.Position = [427 217 266 162];
+
+            % Create GridLayout2
+            app.GridLayout2 = uigridlayout(app.CalibrationPanel);
+            app.GridLayout2.ColumnWidth = {'fit', '1x', 'fit'};
+            app.GridLayout2.RowHeight = {'1x', '1x', '1x', '1x'};
+            app.GridLayout2.ColumnSpacing = 6;
+            app.GridLayout2.RowSpacing = 11.8666687011719;
+            app.GridLayout2.Padding = [6 11.8666687011719 6 11.8666687011719];
+
+            % Create HzLabel
+            app.HzLabel = uilabel(app.GridLayout2);
+            app.HzLabel.Layout.Row = 1;
+            app.HzLabel.Layout.Column = 3;
+            app.HzLabel.Text = 'Hz';
+
+            % Create VkVLabel
+            app.VkVLabel = uilabel(app.GridLayout2);
+            app.VkVLabel.Layout.Row = 2;
+            app.VkVLabel.Layout.Column = 3;
+            app.VkVLabel.Text = 'V/kV';
+
+            % Create NVLabel
+            app.NVLabel = uilabel(app.GridLayout2);
+            app.NVLabel.Layout.Row = 3;
+            app.NVLabel.Layout.Column = 3;
+            app.NVLabel.Text = 'N/V';
+
+            % Create mmVLabel
+            app.mmVLabel = uilabel(app.GridLayout2);
+            app.mmVLabel.Layout.Row = 4;
+            app.mmVLabel.Layout.Column = 3;
+            app.mmVLabel.Text = 'mm/V';
 
             % Create SamplerateEditFieldLabel
-            app.SamplerateEditFieldLabel = uilabel(app.CalibrationPanel);
+            app.SamplerateEditFieldLabel = uilabel(app.GridLayout2);
             app.SamplerateEditFieldLabel.HorizontalAlignment = 'right';
-            app.SamplerateEditFieldLabel.Position = [9 134 75 22];
+            app.SamplerateEditFieldLabel.Layout.Row = 1;
+            app.SamplerateEditFieldLabel.Layout.Column = 1;
             app.SamplerateEditFieldLabel.Text = 'Sample rate';
 
             % Create SamplerateEditField
-            app.SamplerateEditField = uieditfield(app.CalibrationPanel, 'numeric');
+            app.SamplerateEditField = uieditfield(app.GridLayout2, 'numeric');
             app.SamplerateEditField.Limits = [0 Inf];
             app.SamplerateEditField.ValueChangedFcn = createCallbackFcn(app, @SamplerateEditFieldValueChanged, true);
-            app.SamplerateEditField.Position = [98 134 45 22];
+            app.SamplerateEditField.Layout.Row = 1;
+            app.SamplerateEditField.Layout.Column = 2;
             app.SamplerateEditField.Value = 1000;
 
-            % Create HzLabel
-            app.HzLabel = uilabel(app.CalibrationPanel);
-            app.HzLabel.Position = [147 134 25 22];
-            app.HzLabel.Text = 'Hz';
-
-            % Create TREKvoltageconstantkVEditFieldLabel
-            app.TREKvoltageconstantkVEditFieldLabel = uilabel(app.CalibrationPanel);
-            app.TREKvoltageconstantkVEditFieldLabel.HorizontalAlignment = 'center';
-            app.TREKvoltageconstantkVEditFieldLabel.Enable = 'off';
-            app.TREKvoltageconstantkVEditFieldLabel.Position = [9 94 79 27];
-            app.TREKvoltageconstantkVEditFieldLabel.Text = {'TREK voltage'; 'constant (kV)'};
+            % Create TREKvoltageconstantkVLabel
+            app.TREKvoltageconstantkVLabel = uilabel(app.GridLayout2);
+            app.TREKvoltageconstantkVLabel.HorizontalAlignment = 'center';
+            app.TREKvoltageconstantkVLabel.Enable = 'off';
+            app.TREKvoltageconstantkVLabel.Layout.Row = 2;
+            app.TREKvoltageconstantkVLabel.Layout.Column = 1;
+            app.TREKvoltageconstantkVLabel.Text = 'TREK voltage constant (kV)';
 
             % Create TREKvoltageconstantkVEditField
-            app.TREKvoltageconstantkVEditField = uieditfield(app.CalibrationPanel, 'numeric');
+            app.TREKvoltageconstantkVEditField = uieditfield(app.GridLayout2, 'numeric');
             app.TREKvoltageconstantkVEditField.Limits = [0 Inf];
             app.TREKvoltageconstantkVEditField.ValueChangedFcn = createCallbackFcn(app, @TREKvoltageconstantkVEditFieldValueChanged, true);
             app.TREKvoltageconstantkVEditField.Editable = 'off';
             app.TREKvoltageconstantkVEditField.Enable = 'off';
-            app.TREKvoltageconstantkVEditField.Position = [99 96 44 22];
+            app.TREKvoltageconstantkVEditField.Layout.Row = 2;
+            app.TREKvoltageconstantkVEditField.Layout.Column = 2;
             app.TREKvoltageconstantkVEditField.Value = 1;
 
-            % Create VkVLabel
-            app.VkVLabel = uilabel(app.CalibrationPanel);
-            app.VkVLabel.Position = [147 96 31 22];
-            app.VkVLabel.Text = 'V/kV';
-
-            % Create MTforceconstantkFEditFieldLabel
-            app.MTforceconstantkFEditFieldLabel = uilabel(app.CalibrationPanel);
-            app.MTforceconstantkFEditFieldLabel.HorizontalAlignment = 'center';
-            app.MTforceconstantkFEditFieldLabel.Enable = 'off';
-            app.MTforceconstantkFEditFieldLabel.Position = [11 50 75 27];
-            app.MTforceconstantkFEditFieldLabel.Text = {'MT force'; 'constant (kF)'};
+            % Create MTforceconstantkFLabel
+            app.MTforceconstantkFLabel = uilabel(app.GridLayout2);
+            app.MTforceconstantkFLabel.HorizontalAlignment = 'center';
+            app.MTforceconstantkFLabel.Enable = 'off';
+            app.MTforceconstantkFLabel.Layout.Row = 3;
+            app.MTforceconstantkFLabel.Layout.Column = 1;
+            app.MTforceconstantkFLabel.Text = 'MT force constant (kF)';
 
             % Create MTforceconstantkFEditField
-            app.MTforceconstantkFEditField = uieditfield(app.CalibrationPanel, 'numeric');
+            app.MTforceconstantkFEditField = uieditfield(app.GridLayout2, 'numeric');
             app.MTforceconstantkFEditField.Limits = [0 Inf];
             app.MTforceconstantkFEditField.ValueChangedFcn = createCallbackFcn(app, @MTforceconstantkFEditFieldValueChanged, true);
             app.MTforceconstantkFEditField.Editable = 'off';
             app.MTforceconstantkFEditField.Enable = 'off';
-            app.MTforceconstantkFEditField.Position = [99 55 44 22];
+            app.MTforceconstantkFEditField.Layout.Row = 3;
+            app.MTforceconstantkFEditField.Layout.Column = 2;
             app.MTforceconstantkFEditField.Value = 9.96;
 
-            % Create MTlengthconstantkLEditFieldLabel
-            app.MTlengthconstantkLEditFieldLabel = uilabel(app.CalibrationPanel);
-            app.MTlengthconstantkLEditFieldLabel.HorizontalAlignment = 'center';
-            app.MTlengthconstantkLEditFieldLabel.Enable = 'off';
-            app.MTlengthconstantkLEditFieldLabel.Position = [9 11 75 27];
-            app.MTlengthconstantkLEditFieldLabel.Text = {'MT length'; 'constant (kL)'};
+            % Create MTlengthconstantkLLabel
+            app.MTlengthconstantkLLabel = uilabel(app.GridLayout2);
+            app.MTlengthconstantkLLabel.HorizontalAlignment = 'center';
+            app.MTlengthconstantkLLabel.Enable = 'off';
+            app.MTlengthconstantkLLabel.Layout.Row = 4;
+            app.MTlengthconstantkLLabel.Layout.Column = 1;
+            app.MTlengthconstantkLLabel.Text = 'MT length constant (kL)';
 
             % Create MTlengthconstantkLEditField
-            app.MTlengthconstantkLEditField = uieditfield(app.CalibrationPanel, 'numeric');
+            app.MTlengthconstantkLEditField = uieditfield(app.GridLayout2, 'numeric');
             app.MTlengthconstantkLEditField.Limits = [0 Inf];
             app.MTlengthconstantkLEditField.ValueChangedFcn = createCallbackFcn(app, @MTlengthconstantkLEditFieldValueChanged, true);
             app.MTlengthconstantkLEditField.Editable = 'off';
             app.MTlengthconstantkLEditField.Enable = 'off';
-            app.MTlengthconstantkLEditField.Position = [99 13 45 22];
+            app.MTlengthconstantkLEditField.Layout.Row = 4;
+            app.MTlengthconstantkLEditField.Layout.Column = 2;
             app.MTlengthconstantkLEditField.Value = 1.989;
-
-            % Create NVLabel
-            app.NVLabel = uilabel(app.CalibrationPanel);
-            app.NVLabel.Position = [147 55 26 22];
-            app.NVLabel.Text = 'N/V';
-
-            % Create mmVLabel
-            app.mmVLabel = uilabel(app.CalibrationPanel);
-            app.mmVLabel.Position = [147 12 37 22];
-            app.mmVLabel.Text = 'mm/V';
 
             % Create PressStopwhentestiscompletedtosavedataLabel
             app.PressStopwhentestiscompletedtosavedataLabel = uilabel(app.UIFigure);
@@ -1150,11 +1443,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.WavesettingsPanel.Title = 'Wave settings';
             app.WavesettingsPanel.FontWeight = 'bold';
             app.WavesettingsPanel.FontSize = 14;
-            app.WavesettingsPanel.Position = [218 20 576 184];
+            app.WavesettingsPanel.Position = [116 17 843 184];
 
             % Create GridLayout
             app.GridLayout = uigridlayout(app.WavesettingsPanel);
-            app.GridLayout.ColumnWidth = {'fit', 'fit', 'fit', '1x', '1x', '1x', '1x', '1x'};
+            app.GridLayout.ColumnWidth = {'fit', 'fit', 'fit', '1x', 'fit', '1x', 'fit', '1x', 'fit', '1x', 'fit', '1x'};
             app.GridLayout.RowHeight = {'1x', '1x', '1x', '1x', '1x'};
 
             % Create kVVLabel
@@ -1399,6 +1692,204 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.methodLabel.Layout.Row = 1;
             app.methodLabel.Layout.Column = 8;
             app.methodLabel.Text = 'method';
+
+            % Create muscleLabel
+            app.muscleLabel = uilabel(app.GridLayout);
+            app.muscleLabel.HorizontalAlignment = 'right';
+            app.muscleLabel.Layout.Row = 1;
+            app.muscleLabel.Layout.Column = 1;
+            app.muscleLabel.Text = 'muscle';
+
+            % Create HVamplifierLabel
+            app.HVamplifierLabel = uilabel(app.GridLayout);
+            app.HVamplifierLabel.Layout.Row = 1;
+            app.HVamplifierLabel.Layout.Column = 2;
+            app.HVamplifierLabel.Text = 'HV amplifier';
+
+            % Create dutyratio1EditFieldLabel
+            app.dutyratio1EditFieldLabel = uilabel(app.GridLayout);
+            app.dutyratio1EditFieldLabel.HorizontalAlignment = 'right';
+            app.dutyratio1EditFieldLabel.Layout.Row = 2;
+            app.dutyratio1EditFieldLabel.Layout.Column = 9;
+            app.dutyratio1EditFieldLabel.Text = 'duty ratio 1';
+
+            % Create dutyratio1EditField
+            app.dutyratio1EditField = uieditfield(app.GridLayout, 'numeric');
+            app.dutyratio1EditField.Limits = [0 Inf];
+            app.dutyratio1EditField.ValueChangedFcn = createCallbackFcn(app, @dutyratio1EditFieldValueChanged, true);
+            app.dutyratio1EditField.Layout.Row = 2;
+            app.dutyratio1EditField.Layout.Column = 10;
+            app.dutyratio1EditField.Value = 50;
+
+            % Create dutyratio2EditFieldLabel
+            app.dutyratio2EditFieldLabel = uilabel(app.GridLayout);
+            app.dutyratio2EditFieldLabel.HorizontalAlignment = 'right';
+            app.dutyratio2EditFieldLabel.Layout.Row = 3;
+            app.dutyratio2EditFieldLabel.Layout.Column = 9;
+            app.dutyratio2EditFieldLabel.Text = 'duty ratio 2';
+
+            % Create dutyratio2EditField
+            app.dutyratio2EditField = uieditfield(app.GridLayout, 'numeric');
+            app.dutyratio2EditField.Limits = [0 Inf];
+            app.dutyratio2EditField.ValueChangedFcn = createCallbackFcn(app, @dutyratio2EditFieldValueChanged, true);
+            app.dutyratio2EditField.Layout.Row = 3;
+            app.dutyratio2EditField.Layout.Column = 10;
+            app.dutyratio2EditField.Value = 50;
+
+            % Create dutyratio3EditFieldLabel
+            app.dutyratio3EditFieldLabel = uilabel(app.GridLayout);
+            app.dutyratio3EditFieldLabel.HorizontalAlignment = 'right';
+            app.dutyratio3EditFieldLabel.Layout.Row = 4;
+            app.dutyratio3EditFieldLabel.Layout.Column = 9;
+            app.dutyratio3EditFieldLabel.Text = 'duty ratio 3';
+
+            % Create dutyratio3EditField
+            app.dutyratio3EditField = uieditfield(app.GridLayout, 'numeric');
+            app.dutyratio3EditField.Limits = [0 Inf];
+            app.dutyratio3EditField.ValueChangedFcn = createCallbackFcn(app, @dutyratio3EditFieldValueChanged, true);
+            app.dutyratio3EditField.Layout.Row = 4;
+            app.dutyratio3EditField.Layout.Column = 10;
+            app.dutyratio3EditField.Value = 50;
+
+            % Create dutyratio4EditFieldLabel
+            app.dutyratio4EditFieldLabel = uilabel(app.GridLayout);
+            app.dutyratio4EditFieldLabel.HorizontalAlignment = 'right';
+            app.dutyratio4EditFieldLabel.Layout.Row = 5;
+            app.dutyratio4EditFieldLabel.Layout.Column = 9;
+            app.dutyratio4EditFieldLabel.Text = 'duty ratio 4';
+
+            % Create dutyratio4EditField
+            app.dutyratio4EditField = uieditfield(app.GridLayout, 'numeric');
+            app.dutyratio4EditField.Limits = [0 Inf];
+            app.dutyratio4EditField.ValueChangedFcn = createCallbackFcn(app, @dutyratio4EditFieldValueChanged, true);
+            app.dutyratio4EditField.Layout.Row = 5;
+            app.dutyratio4EditField.Layout.Column = 10;
+            app.dutyratio4EditField.Value = 50;
+
+            % Create Label
+            app.Label = uilabel(app.GridLayout);
+            app.Label.HorizontalAlignment = 'center';
+            app.Label.Layout.Row = 1;
+            app.Label.Layout.Column = 10;
+            app.Label.Text = '%';
+
+            % Create rampspeed1EditFieldLabel
+            app.rampspeed1EditFieldLabel = uilabel(app.GridLayout);
+            app.rampspeed1EditFieldLabel.HorizontalAlignment = 'right';
+            app.rampspeed1EditFieldLabel.Layout.Row = 2;
+            app.rampspeed1EditFieldLabel.Layout.Column = 11;
+            app.rampspeed1EditFieldLabel.Text = 'ramp speed 1';
+
+            % Create rampspeed1EditField
+            app.rampspeed1EditField = uieditfield(app.GridLayout, 'numeric');
+            app.rampspeed1EditField.Limits = [0 Inf];
+            app.rampspeed1EditField.ValueChangedFcn = createCallbackFcn(app, @rampspeed1EditFieldValueChanged, true);
+            app.rampspeed1EditField.Layout.Row = 2;
+            app.rampspeed1EditField.Layout.Column = 12;
+            app.rampspeed1EditField.Value = 5;
+
+            % Create kVsLabel
+            app.kVsLabel = uilabel(app.GridLayout);
+            app.kVsLabel.HorizontalAlignment = 'center';
+            app.kVsLabel.Layout.Row = 1;
+            app.kVsLabel.Layout.Column = 12;
+            app.kVsLabel.Text = 'kV/s';
+
+            % Create forstepLabel
+            app.forstepLabel = uilabel(app.GridLayout);
+            app.forstepLabel.HorizontalAlignment = 'center';
+            app.forstepLabel.FontWeight = 'bold';
+            app.forstepLabel.Layout.Row = 1;
+            app.forstepLabel.Layout.Column = 9;
+            app.forstepLabel.Text = 'for step';
+
+            % Create forrampLabel
+            app.forrampLabel = uilabel(app.GridLayout);
+            app.forrampLabel.HorizontalAlignment = 'center';
+            app.forrampLabel.FontWeight = 'bold';
+            app.forrampLabel.Layout.Row = 1;
+            app.forrampLabel.Layout.Column = 11;
+            app.forrampLabel.Text = 'for ramp';
+
+            % Create rampspeed2EditFieldLabel
+            app.rampspeed2EditFieldLabel = uilabel(app.GridLayout);
+            app.rampspeed2EditFieldLabel.HorizontalAlignment = 'right';
+            app.rampspeed2EditFieldLabel.Layout.Row = 3;
+            app.rampspeed2EditFieldLabel.Layout.Column = 11;
+            app.rampspeed2EditFieldLabel.Text = 'ramp speed 2';
+
+            % Create rampspeed2EditField
+            app.rampspeed2EditField = uieditfield(app.GridLayout, 'numeric');
+            app.rampspeed2EditField.Limits = [0 Inf];
+            app.rampspeed2EditField.ValueChangedFcn = createCallbackFcn(app, @rampspeed2EditFieldValueChanged, true);
+            app.rampspeed2EditField.Layout.Row = 3;
+            app.rampspeed2EditField.Layout.Column = 12;
+            app.rampspeed2EditField.Value = 5;
+
+            % Create rampspeed3EditFieldLabel
+            app.rampspeed3EditFieldLabel = uilabel(app.GridLayout);
+            app.rampspeed3EditFieldLabel.HorizontalAlignment = 'right';
+            app.rampspeed3EditFieldLabel.Layout.Row = 4;
+            app.rampspeed3EditFieldLabel.Layout.Column = 11;
+            app.rampspeed3EditFieldLabel.Text = 'ramp speed 3';
+
+            % Create rampspeed3EditField
+            app.rampspeed3EditField = uieditfield(app.GridLayout, 'numeric');
+            app.rampspeed3EditField.Limits = [0 Inf];
+            app.rampspeed3EditField.ValueChangedFcn = createCallbackFcn(app, @rampspeed3EditFieldValueChanged, true);
+            app.rampspeed3EditField.Layout.Row = 4;
+            app.rampspeed3EditField.Layout.Column = 12;
+            app.rampspeed3EditField.Value = 5;
+
+            % Create rampspeed4EditFieldLabel
+            app.rampspeed4EditFieldLabel = uilabel(app.GridLayout);
+            app.rampspeed4EditFieldLabel.HorizontalAlignment = 'right';
+            app.rampspeed4EditFieldLabel.Layout.Row = 5;
+            app.rampspeed4EditFieldLabel.Layout.Column = 11;
+            app.rampspeed4EditFieldLabel.Text = 'ramp speed 4';
+
+            % Create rampspeed4EditField
+            app.rampspeed4EditField = uieditfield(app.GridLayout, 'numeric');
+            app.rampspeed4EditField.Limits = [0 Inf];
+            app.rampspeed4EditField.ValueChangedFcn = createCallbackFcn(app, @rampspeed4EditFieldValueChanged, true);
+            app.rampspeed4EditField.Layout.Row = 5;
+            app.rampspeed4EditField.Layout.Column = 12;
+            app.rampspeed4EditField.Value = 5;
+
+            % Create SelectfilepathEditFieldLabel
+            app.SelectfilepathEditFieldLabel = uilabel(app.UIFigure);
+            app.SelectfilepathEditFieldLabel.HorizontalAlignment = 'right';
+            app.SelectfilepathEditFieldLabel.Position = [584 641 101 22];
+            app.SelectfilepathEditFieldLabel.Text = 'Select file path:';
+
+            % Create SelectfilepathEditField
+            app.SelectfilepathEditField = uieditfield(app.UIFigure, 'text');
+            app.SelectfilepathEditField.Position = [531 611 268 22];
+            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator';
+
+            % Create RawfileprefixEditFieldLabel
+            app.RawfileprefixEditFieldLabel = uilabel(app.UIFigure);
+            app.RawfileprefixEditFieldLabel.HorizontalAlignment = 'right';
+            app.RawfileprefixEditFieldLabel.Enable = 'off';
+            app.RawfileprefixEditFieldLabel.Position = [533 542 81 22];
+            app.RawfileprefixEditFieldLabel.Text = 'Raw file prefix';
+
+            % Create RawfileprefixEditField
+            app.RawfileprefixEditField = uieditfield(app.UIFigure, 'text');
+            app.RawfileprefixEditField.Enable = 'off';
+            app.RawfileprefixEditField.Position = [626 542 173 22];
+            app.RawfileprefixEditField.Value = 'raw_';
+
+            % Create ProcessedfilenameLabel
+            app.ProcessedfilenameLabel = uilabel(app.UIFigure);
+            app.ProcessedfilenameLabel.HorizontalAlignment = 'right';
+            app.ProcessedfilenameLabel.Position = [502 577 114 22];
+            app.ProcessedfilenameLabel.Text = 'Processed filename:';
+
+            % Create ProcessedfilenameEditField
+            app.ProcessedfilenameEditField = uieditfield(app.UIFigure, 'text');
+            app.ProcessedfilenameEditField.Position = [626 577 173 22];
+            app.ProcessedfilenameEditField.Value = 'selfSensing';
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
