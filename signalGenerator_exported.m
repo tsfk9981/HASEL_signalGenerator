@@ -3,12 +3,16 @@ classdef signalGenerator_exported < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
+        FilenamesPanel                  matlab.ui.container.Panel
+        GridLayout8                     matlab.ui.container.GridLayout
+        GoButton                        matlab.ui.control.StateButton
+        SelectfilepathEditField         matlab.ui.control.EditField
+        SelectfilepathEditFieldLabel    matlab.ui.control.Label
+        BrowseButton                    matlab.ui.control.Button
         ProcessedfilenameEditField      matlab.ui.control.EditField
         ProcessedfilenameLabel          matlab.ui.control.Label
         RawfileprefixEditField          matlab.ui.control.EditField
         RawfileprefixEditFieldLabel     matlab.ui.control.Label
-        SelectfilepathEditField         matlab.ui.control.EditField
-        SelectfilepathEditFieldLabel    matlab.ui.control.Label
         WavesettingsPanel               matlab.ui.container.Panel
         GridLayout                      matlab.ui.container.GridLayout
         rampspeed4EditField             matlab.ui.control.NumericEditField
@@ -98,8 +102,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         sLabel                          matlab.ui.control.Label
         kVLabel                         matlab.ui.control.Label
         SaverawfileCheckBox             matlab.ui.control.CheckBox
-        GoButton                        matlab.ui.control.StateButton
-        BrowseButton                    matlab.ui.control.Button
         SetupPanel_2                    matlab.ui.container.Panel
         GridLayout4                     matlab.ui.container.GridLayout
         GridLayout6                     matlab.ui.container.GridLayout
@@ -908,7 +910,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
             % Create UIFigure and hide until all components are created
             app.UIFigure = uifigure('Visible', 'off');
-            app.UIFigure.Position = [100 100 983 681];
+            app.UIFigure.Position = [100 100 1452 775];
             app.UIFigure.Name = 'MATLAB App';
 
             % Create UIAxes
@@ -920,7 +922,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.UIAxes.XTickLabelRotation = 0;
             app.UIAxes.YTickLabelRotation = 0;
             app.UIAxes.ZTickLabelRotation = 0;
-            app.UIAxes.Position = [24 393 404 278];
+            app.UIAxes.Position = [24 483 1099 270];
 
             % Create SetupPanel_2
             app.SetupPanel_2 = uipanel(app.UIFigure);
@@ -928,7 +930,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.SetupPanel_2.Title = 'Setup';
             app.SetupPanel_2.FontWeight = 'bold';
             app.SetupPanel_2.FontSize = 14;
-            app.SetupPanel_2.Position = [-353 132 231 494];
+            app.SetupPanel_2.Position = [1184 101 231 646];
 
             % Create GridLayout4
             app.GridLayout4 = uigridlayout(app.SetupPanel_2);
@@ -1201,26 +1203,12 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.kneeLabel.Layout.Column = 3;
             app.kneeLabel.Text = 'knee';
 
-            % Create BrowseButton
-            app.BrowseButton = uibutton(app.UIFigure, 'push');
-            app.BrowseButton.ButtonPushedFcn = createCallbackFcn(app, @BrowseButtonPushed, true);
-            app.BrowseButton.Position = [699 641 100 22];
-            app.BrowseButton.Text = 'Browse';
-
-            % Create GoButton
-            app.GoButton = uibutton(app.UIFigure, 'state');
-            app.GoButton.ValueChangedFcn = createCallbackFcn(app, @GoButtonValueChanged, true);
-            app.GoButton.Text = 'Go';
-            app.GoButton.BackgroundColor = [0.9608 0.9608 0.9608];
-            app.GoButton.FontSize = 24;
-            app.GoButton.FontWeight = 'bold';
-            app.GoButton.Position = [653 445 146 53];
-
             % Create SaverawfileCheckBox
             app.SaverawfileCheckBox = uicheckbox(app.UIFigure);
             app.SaverawfileCheckBox.ValueChangedFcn = createCallbackFcn(app, @SaverawfileCheckBoxValueChanged, true);
+            app.SaverawfileCheckBox.Enable = 'off';
             app.SaverawfileCheckBox.Text = 'Save raw file';
-            app.SaverawfileCheckBox.Position = [707 511 90 22];
+            app.SaverawfileCheckBox.Position = [1034 48 90 22];
             app.SaverawfileCheckBox.Value = true;
 
             % Create VoltageParametersPanel
@@ -1229,7 +1217,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.VoltageParametersPanel.Title = 'Voltage Parameters';
             app.VoltageParametersPanel.FontWeight = 'bold';
             app.VoltageParametersPanel.FontSize = 14;
-            app.VoltageParametersPanel.Position = [748 216 211 163];
+            app.VoltageParametersPanel.Position = [381 297 213 160];
 
             % Create GridLayout7
             app.GridLayout7 = uigridlayout(app.VoltageParametersPanel);
@@ -1315,7 +1303,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.CalibrationPanel.Title = 'Calibration';
             app.CalibrationPanel.FontWeight = 'bold';
             app.CalibrationPanel.FontSize = 14;
-            app.CalibrationPanel.Position = [427 217 266 162];
+            app.CalibrationPanel.Position = [101 296 266 162];
 
             % Create GridLayout2
             app.GridLayout2 = uigridlayout(app.CalibrationPanel);
@@ -1423,7 +1411,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.PressStopwhentestiscompletedtosavedataLabel.HorizontalAlignment = 'right';
             app.PressStopwhentestiscompletedtosavedataLabel.FontSize = 14;
             app.PressStopwhentestiscompletedtosavedataLabel.FontWeight = 'bold';
-            app.PressStopwhentestiscompletedtosavedataLabel.Position = [464 448 137 50];
+            app.PressStopwhentestiscompletedtosavedataLabel.Position = [809 41 137 50];
             app.PressStopwhentestiscompletedtosavedataLabel.Text = {'Press ''Stop'' when'; 'test is completed to'; 'save data'};
 
             % Create MonitorlimittripstatusCheckBox
@@ -1431,11 +1419,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.MonitorlimittripstatusCheckBox.ValueChangedFcn = createCallbackFcn(app, @MonitorlimittripstatusCheckBoxValueChanged, true);
             app.MonitorlimittripstatusCheckBox.Enable = 'off';
             app.MonitorlimittripstatusCheckBox.Text = 'Monitor limit/trip status';
-            app.MonitorlimittripstatusCheckBox.Position = [645 412 142 22];
+            app.MonitorlimittripstatusCheckBox.Position = [982 69 142 22];
 
             % Create Lamp
             app.Lamp = uilamp(app.UIFigure);
-            app.Lamp.Position = [618 412 20 20];
+            app.Lamp.Position = [960 70 20 20];
 
             % Create WavesettingsPanel
             app.WavesettingsPanel = uipanel(app.UIFigure);
@@ -1443,7 +1431,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.WavesettingsPanel.Title = 'Wave settings';
             app.WavesettingsPanel.FontWeight = 'bold';
             app.WavesettingsPanel.FontSize = 14;
-            app.WavesettingsPanel.Position = [116 17 843 184];
+            app.WavesettingsPanel.Position = [101 107 1023 184];
 
             % Create GridLayout
             app.GridLayout = uigridlayout(app.WavesettingsPanel);
@@ -1856,40 +1844,76 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.rampspeed4EditField.Layout.Column = 12;
             app.rampspeed4EditField.Value = 5;
 
-            % Create SelectfilepathEditFieldLabel
-            app.SelectfilepathEditFieldLabel = uilabel(app.UIFigure);
-            app.SelectfilepathEditFieldLabel.HorizontalAlignment = 'right';
-            app.SelectfilepathEditFieldLabel.Position = [584 641 101 22];
-            app.SelectfilepathEditFieldLabel.Text = 'Select file path:';
+            % Create FilenamesPanel
+            app.FilenamesPanel = uipanel(app.UIFigure);
+            app.FilenamesPanel.TitlePosition = 'centertop';
+            app.FilenamesPanel.Title = 'File names';
+            app.FilenamesPanel.FontWeight = 'bold';
+            app.FilenamesPanel.FontSize = 14;
+            app.FilenamesPanel.Position = [629 296 495 161];
 
-            % Create SelectfilepathEditField
-            app.SelectfilepathEditField = uieditfield(app.UIFigure, 'text');
-            app.SelectfilepathEditField.Position = [531 611 268 22];
-            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator';
+            % Create GridLayout8
+            app.GridLayout8 = uigridlayout(app.FilenamesPanel);
+            app.GridLayout8.ColumnWidth = {'fit', 'fit', 'fit', '1x'};
+            app.GridLayout8.RowHeight = {'1x', '1x', '1x', '1x'};
 
             % Create RawfileprefixEditFieldLabel
-            app.RawfileprefixEditFieldLabel = uilabel(app.UIFigure);
+            app.RawfileprefixEditFieldLabel = uilabel(app.GridLayout8);
             app.RawfileprefixEditFieldLabel.HorizontalAlignment = 'right';
             app.RawfileprefixEditFieldLabel.Enable = 'off';
-            app.RawfileprefixEditFieldLabel.Position = [533 542 81 22];
+            app.RawfileprefixEditFieldLabel.Layout.Row = 4;
+            app.RawfileprefixEditFieldLabel.Layout.Column = 1;
             app.RawfileprefixEditFieldLabel.Text = 'Raw file prefix';
 
             % Create RawfileprefixEditField
-            app.RawfileprefixEditField = uieditfield(app.UIFigure, 'text');
+            app.RawfileprefixEditField = uieditfield(app.GridLayout8, 'text');
             app.RawfileprefixEditField.Enable = 'off';
-            app.RawfileprefixEditField.Position = [626 542 173 22];
+            app.RawfileprefixEditField.Layout.Row = 4;
+            app.RawfileprefixEditField.Layout.Column = 2;
             app.RawfileprefixEditField.Value = 'raw_';
 
             % Create ProcessedfilenameLabel
-            app.ProcessedfilenameLabel = uilabel(app.UIFigure);
+            app.ProcessedfilenameLabel = uilabel(app.GridLayout8);
             app.ProcessedfilenameLabel.HorizontalAlignment = 'right';
-            app.ProcessedfilenameLabel.Position = [502 577 114 22];
+            app.ProcessedfilenameLabel.Layout.Row = 3;
+            app.ProcessedfilenameLabel.Layout.Column = 1;
             app.ProcessedfilenameLabel.Text = 'Processed filename:';
 
             % Create ProcessedfilenameEditField
-            app.ProcessedfilenameEditField = uieditfield(app.UIFigure, 'text');
-            app.ProcessedfilenameEditField.Position = [626 577 173 22];
+            app.ProcessedfilenameEditField = uieditfield(app.GridLayout8, 'text');
+            app.ProcessedfilenameEditField.Layout.Row = 3;
+            app.ProcessedfilenameEditField.Layout.Column = 2;
             app.ProcessedfilenameEditField.Value = 'selfSensing';
+
+            % Create BrowseButton
+            app.BrowseButton = uibutton(app.GridLayout8, 'push');
+            app.BrowseButton.ButtonPushedFcn = createCallbackFcn(app, @BrowseButtonPushed, true);
+            app.BrowseButton.Layout.Row = 2;
+            app.BrowseButton.Layout.Column = 3;
+            app.BrowseButton.Text = 'Browse';
+
+            % Create SelectfilepathEditFieldLabel
+            app.SelectfilepathEditFieldLabel = uilabel(app.GridLayout8);
+            app.SelectfilepathEditFieldLabel.HorizontalAlignment = 'right';
+            app.SelectfilepathEditFieldLabel.Layout.Row = 2;
+            app.SelectfilepathEditFieldLabel.Layout.Column = 1;
+            app.SelectfilepathEditFieldLabel.Text = 'Select file path:';
+
+            % Create SelectfilepathEditField
+            app.SelectfilepathEditField = uieditfield(app.GridLayout8, 'text');
+            app.SelectfilepathEditField.Layout.Row = 2;
+            app.SelectfilepathEditField.Layout.Column = 2;
+            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator';
+
+            % Create GoButton
+            app.GoButton = uibutton(app.GridLayout8, 'state');
+            app.GoButton.ValueChangedFcn = createCallbackFcn(app, @GoButtonValueChanged, true);
+            app.GoButton.Text = 'Go';
+            app.GoButton.BackgroundColor = [0.9608 0.9608 0.9608];
+            app.GoButton.FontSize = 24;
+            app.GoButton.FontWeight = 'bold';
+            app.GoButton.Layout.Row = [1 4];
+            app.GoButton.Layout.Column = 4;
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
