@@ -198,22 +198,24 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             %             size(signalBase)
             %             size(mask)
 
+
+            voltageSignal = zeros(size(signalBase));
+            voltageSignal(signalBase > 0) = maxVoltage;
+            voltageSignal(signalBase < 0) = -maxVoltage;
+            voltageSignal(time <= 0) = 0;
+
+
+            i = 0;
+            indDurationCycle = fix(sampRate/2/frequency);
+
             switch method
                 case 'sine'
                     voltageSignal = signalBase.^2*maxVoltage; % abs(signalBase.^3) is also fine if you want more smooth zero crossing
                     voltageSignal = voltageSignal.*mask;
 
                 case 'step'
-                    voltageSignal = zeros(size(signalBase));
-                    voltageSignal(signalBase > 0) = maxVoltage;
-                    voltageSignal(signalBase < 0) = -maxVoltage;
-                    voltageSignal(time <= 0) = 0;
-
-
-                    i = 0;
-                    indDurationCycle = fix(sampRate/2/frequency);
                     while 1
-                        indStart = fix(timeInit*sampRate) + i*indDurationCycle;
+                        indStart = fix(timeInit*sampRate) + i*indDurationCycle + 1;
                         indEnd = fix(timeInit*sampRate) + (i+1)*indDurationCycle +1;
 
                         if indEnd <= totalSamples + 1
@@ -228,10 +230,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                     end
 
                 case 'ramped square'
-
-                    voltageSignal = zeros(size(signalBase));
-                    i = 0;
-                    indDurationCycle = fix(sampRate/2/frequency);
                     while 1
                         indStart = fix(timeInit*sampRate) + i*indDurationCycle + 1;
                         indEnd = fix(timeInit*sampRate) + (i+1)*indDurationCycle + 1;
@@ -245,14 +243,14 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                             indRampDownStart = indKeepOnStart + indDurationKeepOn;
                             indRampDownEnd = indRampDownStart + indDurationRamp;
 
-                            if indRampDownEnd > indEnd
+                            if indRampDownEnd >= indEnd
                                 error('Error: 1 cycle is longer than the cycle frequency. DecreaSE the cycle frequency or increase ramp speed.')
                             end
 
-                            voltageSignal(indRampUpStart + 1: indKeepOnStart) = linspace(0, maxVoltage, indDurationRamp);
-                            voltageSignal(indKeepOnStart + 1: indRampDownStart) = maxVoltage;
-                            voltageSignal(indRampDownStart + 1: indRampDownEnd) = linspace(maxVoltage, 0, indDurationRamp);
-                            voltageSignal(indRampDownEnd + 1: min(indEnd, length(voltageSignal))) = 0;
+                            voltageSignal(indRampUpStart: indKeepOnStart-1) = linspace(0, voltageSignal(indKeepOnStart), indDurationRamp);
+%                             voltageSignal(indKeepOnStart: indRampDownStart-1) = maxVoltage;
+                            voltageSignal(indRampDownStart: indRampDownEnd-1) = linspace(voltageSignal(indKeepOnStart), 0, indDurationRamp);
+                            voltageSignal(indRampDownEnd: min(indEnd, length(voltageSignal))) = 0;
 
                             i = i + 1;
                         elseif indStart <= length(voltageSignal)
@@ -262,7 +260,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                             break
                         end
                     end
-                    voltageSignal = voltageSignal.*mask;
+%                     voltageSignal = voltageSignal.*mask;
 
             end
 
