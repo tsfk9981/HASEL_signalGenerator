@@ -15,6 +15,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         RawfileprefixEditFieldLabel     matlab.ui.control.Label
         WavesettingsPanel               matlab.ui.container.Panel
         GridLayout                      matlab.ui.container.GridLayout
+        delayCheckBox                   matlab.ui.control.CheckBox
         rampspeed4EditField             matlab.ui.control.NumericEditField
         rampspeed4EditFieldLabel        matlab.ui.control.Label
         rampspeed3EditField             matlab.ui.control.NumericEditField
@@ -170,13 +171,19 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             voltageSignal_3 = createBaseSignal(app, app.method3DropDown.Value, app.dutyratio3EditField.Value, app.rampspeed3EditField.Value, time, timeInit);
             voltageSignal_4 = createBaseSignal(app, app.method4DropDown.Value, app.dutyratio4EditField.Value, app.rampspeed4EditField.Value, time, timeInit);
 
-            voltageSignal_1 = shiftPhase(app, voltageSignal_1, app.delay1EditField.Value, timeInit)/app.gain1EditField.Value;
-            voltageSignal_2 = shiftPhase(app, voltageSignal_2, app.delay2EditField.Value, timeInit)/app.gain2EditField.Value;
-            voltageSignal_3 = shiftPhase(app, voltageSignal_3, app.delay3EditField.Value, timeInit)/app.gain3EditField.Value;
-            voltageSignal_4 = shiftPhase(app, voltageSignal_4, app.delay4EditField.Value, timeInit)/app.gain4EditField.Value;
+            voltageSignal_1 = voltageSignal_1/app.gain1EditField.Value;
+            voltageSignal_2 = voltageSignal_2/app.gain2EditField.Value;
+            voltageSignal_3 = voltageSignal_3/app.gain3EditField.Value;
+            voltageSignal_4 = voltageSignal_4/app.gain4EditField.Value;
 
+            if app.delayCheckBox.Value
 
+                voltageSignal_1 = shiftPhase(app, voltageSignal_1, app.delay1EditField.Value, timeInit);
+                voltageSignal_2 = shiftPhase(app, voltageSignal_2, app.delay2EditField.Value, timeInit);
+                voltageSignal_3 = shiftPhase(app, voltageSignal_3, app.delay3EditField.Value, timeInit);
+                voltageSignal_4 = shiftPhase(app, voltageSignal_4, app.delay4EditField.Value, timeInit);
 
+            end
 
             refSignal = zeros(size(time)); % dump signal, originally used for reference signal for TF estimation
 
@@ -899,6 +906,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         % Value changed function: rampspeed4EditField
         function rampspeed4EditFieldValueChanged(app, event)
             buildPreview(app);            
+        end
+
+        % Value changed function: delayCheckBox
+        function delayCheckBoxValueChanged(app, event)
+            buildPreview(app);                        
         end
     end
 
@@ -1843,6 +1855,14 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.rampspeed4EditField.Layout.Row = 5;
             app.rampspeed4EditField.Layout.Column = 12;
             app.rampspeed4EditField.Value = 5;
+
+            % Create delayCheckBox
+            app.delayCheckBox = uicheckbox(app.GridLayout);
+            app.delayCheckBox.ValueChangedFcn = createCallbackFcn(app, @delayCheckBoxValueChanged, true);
+            app.delayCheckBox.Text = 'delay';
+            app.delayCheckBox.Layout.Row = 1;
+            app.delayCheckBox.Layout.Column = 5;
+            app.delayCheckBox.Value = true;
 
             % Create FilenamesPanel
             app.FilenamesPanel = uipanel(app.UIFigure);
