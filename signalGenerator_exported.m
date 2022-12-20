@@ -3,6 +3,9 @@ classdef signalGenerator_exported < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
+        DAQButtonGroup                  matlab.ui.container.ButtonGroup
+        outputsButton_2                 matlab.ui.control.RadioButton
+        outputsButton                   matlab.ui.control.RadioButton
         FilenamesPanel                  matlab.ui.container.Panel
         GridLayout8                     matlab.ui.container.GridLayout
         GoButton                        matlab.ui.control.StateButton
@@ -422,7 +425,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function startupFcn(app)
             DQL = daqlist; % get connected device list
             %             DevName = DQL.DeviceID(1); % select the first one (["Dev1", "SimDev1"] or ["SimDev1"])
-            DevName = "Dev6";
+            DevName = "Dev3";
             % DAQ Dev1 ao0 = Voltage output to Trek
             % DAQ Dev1 ao1 = sync signal
 
@@ -469,11 +472,13 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             addoutput(d, DevName, "ao1", "Voltage");
             % voltage output to TREk2
 
-            addoutput(d, DevName, "ao2", "Voltage");
-            % voltage output to TREk3
+            if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
+                addoutput(d, DevName, "ao2", "Voltage");
+                % voltage output to TREk3
 
-            addoutput(d, DevName, "ao3", "Voltage");
-            % voltage output to TREk4
+                addoutput(d, DevName, "ao3", "Voltage");
+                % voltage output to TREk4
+            end
 
             addinput(d, DevName, "ai0", "Voltage");
             % TREK 1 voltage monitor
@@ -499,12 +504,13 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             addinput(d, DevName, "ai7", "Voltage");
             % TREK 4 current monitor
 
-            addinput(d, DevName, "ai16", "Voltage");
-            % hip angle
+            if app.DAQButtonGroup.SelectedObject == '4 outputs'
+                addinput(d, DevName, "ai16", "Voltage");
+                % hip angle
 
-            addinput(d, DevName, "ai17", "Voltage");
-            % knee angle
-
+                addinput(d, DevName, "ai17", "Voltage");
+                % knee angle
+            end
 
             d.Channels
         end
@@ -587,8 +593,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 angleArr2 = zeros(length(fullSignal), 1);
 
                 scanCount = 0;
-                preload(d, fullSignal(:, 3:6));
-
+                if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
+                    preload(d, fullSignal(:, 3:6));
+                else
+                    preload(d, fullSignal(:, 3:4));
+                end
                 %                 while 1 % wait for trigger
                 %                     tmp = read(d, "OutputFormat","Matrix");
                 %                     if tmp(:, 5) > 4 % 5V trigger
@@ -629,7 +638,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 % file saves
                 if app.SaverawfileCheckBox.Value
                     textPara = [...
-                        app.methodDropDown.Value(1), '_',...
+                        app.method1DropDown.Value(1), '_',...
                         num2str(app.MaxvoltageEditField.Value*10,   '%02.0f'), 'kV_',...
                         num2str(app.frequencyEditField.Value*10, '%03.0f'), 'Hz_',...
                         num2str(app.SamplerateEditField.Value,   '%04.0f'), 'Hz_',...
@@ -677,8 +686,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 %                     {'Frequency [Hz]', 'Amplitude [dB]', 'Phase [deg]'}), processedFilename);
                 % Fush the DAQ and ensure zero voltage
                 flush(d);
-                write(d, [0, 0, 0, 0]);
-
+                if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
+                    write(d, [0, 0, 0, 0]);
+                else
+                    write(d, [0, 0]);
+                end
 
                 app.GoButton.BackgroundColor = [0.96, 0.96, 0.96];
                 app.GoButton.Text = {'Go', '(inactive)'};
@@ -1934,6 +1946,24 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.GoButton.FontWeight = 'bold';
             app.GoButton.Layout.Row = [1 4];
             app.GoButton.Layout.Column = 4;
+
+            % Create DAQButtonGroup
+            app.DAQButtonGroup = uibuttongroup(app.UIFigure);
+            app.DAQButtonGroup.Title = 'DAQ';
+            app.DAQButtonGroup.Position = [101 19 148 72];
+
+            % Create outputsButton
+            app.outputsButton = uiradiobutton(app.DAQButtonGroup);
+            app.outputsButton.Enable = 'off';
+            app.outputsButton.Text = '2 outputs';
+            app.outputsButton.Position = [11 26 71 22];
+            app.outputsButton.Value = true;
+
+            % Create outputsButton_2
+            app.outputsButton_2 = uiradiobutton(app.DAQButtonGroup);
+            app.outputsButton_2.Enable = 'off';
+            app.outputsButton_2.Text = '4 outputs';
+            app.outputsButton_2.Position = [11 4 71 22];
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
