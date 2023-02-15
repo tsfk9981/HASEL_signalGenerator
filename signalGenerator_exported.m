@@ -504,7 +504,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             addinput(d, DevName, "ai7", "Voltage");
             % TREK 4 current monitor
 
-            if app.DAQButtonGroup.SelectedObject == '4 outputs'
+            if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
                 addinput(d, DevName, "ai16", "Voltage");
                 % hip angle
 
@@ -1957,13 +1957,13 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.outputsButton.Enable = 'off';
             app.outputsButton.Text = '2 outputs';
             app.outputsButton.Position = [11 26 71 22];
-            app.outputsButton.Value = true;
 
             % Create outputsButton_2
             app.outputsButton_2 = uiradiobutton(app.DAQButtonGroup);
             app.outputsButton_2.Enable = 'off';
             app.outputsButton_2.Text = '4 outputs';
             app.outputsButton_2.Position = [11 4 71 22];
+            app.outputsButton_2.Value = true;
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
