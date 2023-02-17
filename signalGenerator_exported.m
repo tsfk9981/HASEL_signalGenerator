@@ -337,7 +337,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function storeData(app, ~, ~)
             % This function is called every n = scansAvailableFcnCount data
             % points read by the DAQ
-            global d voltageArr1 currentArr1 voltageArr2 currentArr2 voltageArr3 currentArr3 voltageArr4 currentArr4 angleArr1 angleArr2 scanCount lastDataIndex
+            global d voltageArr1 currentArr1 voltageArr2 currentArr2 voltageArr3 currentArr3 voltageArr4 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex
 
             numScansAvailable = d.NumScansAvailable;
             if numScansAvailable == 0
@@ -395,6 +395,20 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             angle2 = scanData(:, 10);
             angleArr2(startIndex: endIndex) = angle2;
             % channel 17 is encoder angle 2 (in volts)
+
+            fp1 = scanData(:, 11);
+            fpArr1(startIndex: endIndex) = fp1;
+            % channel 20 is force plate X (in volts)
+
+            fp2 = scanData(:, 12);
+            fpArr2(startIndex: endIndex) = fp2;
+            % channel 21 is force plate Y (in volts)
+
+            fp3 = scanData(:, 13);
+            fpArr3(startIndex: endIndex) = fp3;
+            % channel 22 is force plate Z (in volts)
+
+
 
             % Plot data every cycle
             x = linspace(cast(startIndex, 'double'), cast(endIndex, 'double'), length(force));
@@ -510,6 +524,17 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
                 addinput(d, DevName, "ai17", "Voltage");
                 % knee angle
+
+                addinput(d, DevName, "ai20", "Voltage");
+                % force plate X
+
+                addinput(d, DevName, "ai21", "Voltage");
+                % force plate Y
+                
+                addinput(d, DevName, "ai22", "Voltage");
+                % force plate Z
+
+            
             end
 
             d.Channels
@@ -528,7 +553,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         % Value changed function: GoButton
         function GoButtonValueChanged(app, event)
-            global d voltageArr1 voltageArr2 voltageArr3 voltageArr4 currentArr1 currentArr2 currentArr3 currentArr4 angleArr1 angleArr2 scanCount lastDataIndex kV kF kL
+            global d voltageArr1 voltageArr2 voltageArr3 voltageArr4 currentArr1 currentArr2 currentArr3 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex kV kF kL
 
 
             fullSignal = buildSignal(app);
@@ -591,6 +616,9 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 currentArr4 = zeros(length(fullSignal), 1);
                 angleArr1 = zeros(length(fullSignal), 1);
                 angleArr2 = zeros(length(fullSignal), 1);
+                fpArr1 = zeros(length(fullSignal), 1);
+                fpArr2 = zeros(length(fullSignal), 1);
+                fpArr3 = zeros(length(fullSignal), 1);
 
                 scanCount = 0;
                 if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
@@ -663,6 +691,9 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                         currentArr4(1:lastDataIndex)*kV,...
                         angleArr1(1: lastDataIndex),...
                         angleArr2(1: lastDataIndex),...
+                        fpArr1(1: lastDataIndex),...
+                        fpArr2(1: lastDataIndex),...
+                        fpArr3(1: lastDataIndex),...
                         'VariableNames', {...
                         'Time [s]',...
                         'Voltage ref 1[kV]',...
@@ -677,8 +708,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                         'Current 3 [A]',...
                         'Voltage 4 [kV]',...
                         'Current 4 [A]',...
-                        'Angle 1 [V]'...
-                        'Angle 2 [V]'...
+                        'Angle 1 [V]',...
+                        'Angle 2 [V]',...
+                        'force 1 [V]',...
+                        'force 2 [V]',...
+                        'force 3 [V]',...
                         }), rawFilename);
                 end
                 %                 processedFilename = fullfile(app.SelectfilepathEditField.Value, [app.ProcessedfilenameEditField.Value ,'_sineSweep_', textPara]);
