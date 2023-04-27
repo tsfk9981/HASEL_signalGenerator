@@ -3,6 +3,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
+        expoEditField                   matlab.ui.control.NumericEditField
+        expoEditField_2Label            matlab.ui.control.Label
         DAQButtonGroup                  matlab.ui.container.ButtonGroup
         outputsButton_2                 matlab.ui.control.RadioButton
         outputsButton                   matlab.ui.control.RadioButton
@@ -50,14 +52,14 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         method2DropDownLabel            matlab.ui.control.Label
         method1DropDown                 matlab.ui.control.DropDown
         method1DropDownLabel            matlab.ui.control.Label
-        Label_3                         matlab.ui.control.Label
-        Label_2                         matlab.ui.control.Label
-        MatsusadaLabel                  matlab.ui.control.Label
-        kVLabel_2                       matlab.ui.control.Label
-        HPosLabel                       matlab.ui.control.Label
-        KNegLabel                       matlab.ui.control.Label
-        HNegLabel                       matlab.ui.control.Label
-        KPosLabel                       matlab.ui.control.Label
+        Trek3Label_4                    matlab.ui.control.Label
+        Trek4Label_4                    matlab.ui.control.Label
+        PolyKLabel_2                    matlab.ui.control.Label
+        Trek0Label                      matlab.ui.control.Label
+        HNLabel                         matlab.ui.control.Label
+        KPLabel                         matlab.ui.control.Label
+        KNLabel_2                       matlab.ui.control.Label
+        HPLabel_2                       matlab.ui.control.Label
         delay4EditField                 matlab.ui.control.NumericEditField
         delay4EditFieldLabel            matlab.ui.control.Label
         delay3EditField                 matlab.ui.control.NumericEditField
@@ -220,7 +222,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
             switch method
                 case 'sine'
-                    voltageSignal = signalBase.^2*maxVoltage; % abs(signalBase.^3) is also fine if you want more smooth zero crossing
+                    expo = app.expoEditField.Value;
+                    voltageSignal = signalBase.^expo*maxVoltage; % abs(signalBase.^3) is also fine if you want more smooth zero crossing
                     voltageSignal = voltageSignal.*mask;
 
                 case 'step'
@@ -439,7 +442,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function startupFcn(app)
             DQL = daqlist; % get connected device list
             %             DevName = DQL.DeviceID(1); % select the first one (["Dev1", "SimDev1"] or ["SimDev1"])
-            DevName = "Dev3";
+            DevName = "Dev4";
             % DAQ Dev1 ao0 = Voltage output to Trek
             % DAQ Dev1 ao1 = sync signal
 
@@ -480,7 +483,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
 
 
-            addoutput(d, DevName, "ao0", "Voltage");
+           addoutput(d, DevName, "ao0", "Voltage");
             % voltage output to TREk1
 
             addoutput(d, DevName, "ao1", "Voltage");
@@ -670,10 +673,15 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                         num2str(app.MaxvoltageEditField.Value*10,   '%02.0f'), 'kV_',...
                         num2str(app.frequencyEditField.Value*10, '%03.0f'), 'Hz_',...
                         num2str(app.SamplerateEditField.Value,   '%04.0f'), 'Hz_',...
-                        num2str(app.dutyratio1EditField.Value,    '%03.0f'), 'duty_',...
-                        num2str(app.rampspeed1EditField.Value,    '%03.0f'), 'kVs'];
+                        num2str(app.dutyratio2EditField.Value,   '%04.0f'), 'duty_',...
+                        num2str(app.expoEditField.Value,         '%02.0f'), 'exp_',...
+                        num2str(app.delay1EditField.Value,       '%03.0f'), 'deg_',...
+                        num2str(app.delay2EditField.Value,       '%03.0f'), 'deg_',...
+                        num2str(app.delay3EditField.Value,       '%03.0f'), 'deg_',...
+                        num2str(app.delay4EditField.Value,       '%03.0f'), 'deg_',...
+                        ];
                     rawFilename = fullfile(app.SelectfilepathEditField.Value,...
-                        [app.RawfileprefixEditField.Value, app.ProcessedfilenameEditField.Value, '_', textPara, datestr(now,'_yyyy_mm_dd_HHMM'), '.dat']);
+                        [app.RawfileprefixEditField.Value, app.ProcessedfilenameEditField.Value, '_', textPara, datestr(now,'yyyy_mm_dd_HHMM_SS'), '.dat']);
 
                     writetable(table(...
                         fullSignal(:, 1),...
@@ -957,6 +965,16 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         % Value changed function: delayCheckBox
         function delayCheckBoxValueChanged(app, event)
             buildPreview(app);                        
+        end
+
+        % Callback function
+        function expoEditFieldValueChanging(app, event)
+            buildPreview(app);                                    
+        end
+
+        % Value changed function: expoEditField
+        function expoEditFieldValueChanged(app, event)
+            buildPreview(app);                                                
         end
     end
 
@@ -1323,7 +1341,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.MaxvoltageEditField.ValueChangedFcn = createCallbackFcn(app, @MaxvoltageEditFieldValueChanged, true);
             app.MaxvoltageEditField.Layout.Row = 3;
             app.MaxvoltageEditField.Layout.Column = 2;
-            app.MaxvoltageEditField.Value = 6;
+            app.MaxvoltageEditField.Value = 3;
 
             % Create TotaltimeEditFieldLabel
             app.TotaltimeEditFieldLabel = uilabel(app.GridLayout7);
@@ -1338,7 +1356,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.TotaltimeEditField.ValueChangedFcn = createCallbackFcn(app, @TotaltimeEditFieldValueChanged, true);
             app.TotaltimeEditField.Layout.Row = 1;
             app.TotaltimeEditField.Layout.Column = 2;
-            app.TotaltimeEditField.Value = 8;
+            app.TotaltimeEditField.Value = 4;
 
             % Create frequencyEditFieldLabel
             app.frequencyEditFieldLabel = uilabel(app.GridLayout7);
@@ -1522,7 +1540,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.gain1EditField.ValueChangedFcn = createCallbackFcn(app, @gain1EditFieldValueChanged, true);
             app.gain1EditField.Layout.Row = 2;
             app.gain1EditField.Layout.Column = 4;
-            app.gain1EditField.Value = 5;
+            app.gain1EditField.Value = 1;
 
             % Create gain2EditFieldLabel
             app.gain2EditFieldLabel = uilabel(app.GridLayout);
@@ -1564,7 +1582,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.gain4EditField.ValueChangedFcn = createCallbackFcn(app, @gain4EditFieldValueChanged, true);
             app.gain4EditField.Layout.Row = 5;
             app.gain4EditField.Layout.Column = 4;
-            app.gain4EditField.Value = 2;
+            app.gain4EditField.Value = 1;
 
             % Create delay1EditFieldLabel
             app.delay1EditFieldLabel = uilabel(app.GridLayout);
@@ -1591,7 +1609,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.delay2EditField.ValueChangedFcn = createCallbackFcn(app, @delay2EditFieldValueChanged, true);
             app.delay2EditField.Layout.Row = 3;
             app.delay2EditField.Layout.Column = 6;
-            app.delay2EditField.Value = 90;
 
             % Create delay3EditFieldLabel
             app.delay3EditFieldLabel = uilabel(app.GridLayout);
@@ -1605,7 +1622,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.delay3EditField.ValueChangedFcn = createCallbackFcn(app, @delay3EditFieldValueChanged, true);
             app.delay3EditField.Layout.Row = 4;
             app.delay3EditField.Layout.Column = 6;
-            app.delay3EditField.Value = 180;
 
             % Create delay4EditFieldLabel
             app.delay4EditFieldLabel = uilabel(app.GridLayout);
@@ -1619,58 +1635,58 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.delay4EditField.ValueChangedFcn = createCallbackFcn(app, @delay4EditFieldValueChanged, true);
             app.delay4EditField.Layout.Row = 5;
             app.delay4EditField.Layout.Column = 6;
-            app.delay4EditField.Value = 270;
 
-            % Create KPosLabel
-            app.KPosLabel = uilabel(app.GridLayout);
-            app.KPosLabel.HorizontalAlignment = 'right';
-            app.KPosLabel.Layout.Row = 2;
-            app.KPosLabel.Layout.Column = 1;
-            app.KPosLabel.Text = 'K-Pos';
+            % Create HPLabel_2
+            app.HPLabel_2 = uilabel(app.GridLayout);
+            app.HPLabel_2.HorizontalAlignment = 'right';
+            app.HPLabel_2.Layout.Row = 2;
+            app.HPLabel_2.Layout.Column = 1;
+            app.HPLabel_2.Text = 'HP';
 
-            % Create HNegLabel
-            app.HNegLabel = uilabel(app.GridLayout);
-            app.HNegLabel.HorizontalAlignment = 'right';
-            app.HNegLabel.Layout.Row = 3;
-            app.HNegLabel.Layout.Column = 1;
-            app.HNegLabel.Text = 'H-Neg';
+            % Create KNLabel_2
+            app.KNLabel_2 = uilabel(app.GridLayout);
+            app.KNLabel_2.HorizontalAlignment = 'right';
+            app.KNLabel_2.Layout.Row = 3;
+            app.KNLabel_2.Layout.Column = 1;
+            app.KNLabel_2.Text = 'KN';
 
-            % Create KNegLabel
-            app.KNegLabel = uilabel(app.GridLayout);
-            app.KNegLabel.HorizontalAlignment = 'right';
-            app.KNegLabel.Layout.Row = 4;
-            app.KNegLabel.Layout.Column = 1;
-            app.KNegLabel.Text = 'K-Neg';
+            % Create KPLabel
+            app.KPLabel = uilabel(app.GridLayout);
+            app.KPLabel.HorizontalAlignment = 'right';
+            app.KPLabel.Layout.Row = 4;
+            app.KPLabel.Layout.Column = 1;
+            app.KPLabel.Text = 'KP';
 
-            % Create HPosLabel
-            app.HPosLabel = uilabel(app.GridLayout);
-            app.HPosLabel.HorizontalAlignment = 'right';
-            app.HPosLabel.Layout.Row = 5;
-            app.HPosLabel.Layout.Column = 1;
-            app.HPosLabel.Text = 'H-Pos';
+            % Create HNLabel
+            app.HNLabel = uilabel(app.GridLayout);
+            app.HNLabel.HorizontalAlignment = 'right';
+            app.HNLabel.Layout.Row = 5;
+            app.HNLabel.Layout.Column = 1;
+            app.HNLabel.Text = 'HN';
 
-            % Create kVLabel_2
-            app.kVLabel_2 = uilabel(app.GridLayout);
-            app.kVLabel_2.Layout.Row = 2;
-            app.kVLabel_2.Layout.Column = 2;
-            app.kVLabel_2.Text = '50kV';
+            % Create Trek0Label
+            app.Trek0Label = uilabel(app.GridLayout);
+            app.Trek0Label.Layout.Row = 2;
+            app.Trek0Label.Layout.Column = 2;
+            app.Trek0Label.Text = 'Trek 0';
 
-            % Create MatsusadaLabel
-            app.MatsusadaLabel = uilabel(app.GridLayout);
-            app.MatsusadaLabel.Layout.Row = 3;
-            app.MatsusadaLabel.Layout.Column = 2;
-            app.MatsusadaLabel.Text = 'Matsusada';
+            % Create PolyKLabel_2
+            app.PolyKLabel_2 = uilabel(app.GridLayout);
+            app.PolyKLabel_2.Layout.Row = 3;
+            app.PolyKLabel_2.Layout.Column = 2;
+            app.PolyKLabel_2.Text = 'PolyK';
 
-            % Create Label_2
-            app.Label_2 = uilabel(app.GridLayout);
-            app.Label_2.Layout.Row = 4;
-            app.Label_2.Layout.Column = 2;
+            % Create Trek4Label_4
+            app.Trek4Label_4 = uilabel(app.GridLayout);
+            app.Trek4Label_4.Layout.Row = 4;
+            app.Trek4Label_4.Layout.Column = 2;
+            app.Trek4Label_4.Text = 'Trek 4';
 
-            % Create Label_3
-            app.Label_3 = uilabel(app.GridLayout);
-            app.Label_3.Layout.Row = 5;
-            app.Label_3.Layout.Column = 2;
-            app.Label_3.Text = '20/20';
+            % Create Trek3Label_4
+            app.Trek3Label_4 = uilabel(app.GridLayout);
+            app.Trek3Label_4.Layout.Row = 5;
+            app.Trek3Label_4.Layout.Column = 2;
+            app.Trek3Label_4.Text = 'Trek 3';
 
             % Create method1DropDownLabel
             app.method1DropDownLabel = uilabel(app.GridLayout);
@@ -1949,7 +1965,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.ProcessedfilenameEditField = uieditfield(app.GridLayout8, 'text');
             app.ProcessedfilenameEditField.Layout.Row = 3;
             app.ProcessedfilenameEditField.Layout.Column = 2;
-            app.ProcessedfilenameEditField.Value = 'selfSensing';
+            app.ProcessedfilenameEditField.Value = 'SS';
 
             % Create BrowseButton
             app.BrowseButton = uibutton(app.GridLayout8, 'push');
@@ -1969,7 +1985,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.SelectfilepathEditField = uieditfield(app.GridLayout8, 'text');
             app.SelectfilepathEditField.Layout.Row = 2;
             app.SelectfilepathEditField.Layout.Column = 2;
-            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator';
+            app.SelectfilepathEditField.Value = '\\space\fukushima\RM\prj_legETH\experiments\20230427_selfSensing';
 
             % Create GoButton
             app.GoButton = uibutton(app.GridLayout8, 'state');
@@ -1998,6 +2014,18 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.outputsButton_2.Text = '4 outputs';
             app.outputsButton_2.Position = [11 4 71 22];
             app.outputsButton_2.Value = true;
+
+            % Create expoEditField_2Label
+            app.expoEditField_2Label = uilabel(app.UIFigure);
+            app.expoEditField_2Label.HorizontalAlignment = 'right';
+            app.expoEditField_2Label.Position = [584 69 32 22];
+            app.expoEditField_2Label.Text = 'expo';
+
+            % Create expoEditField
+            app.expoEditField = uieditfield(app.UIFigure, 'numeric');
+            app.expoEditField.ValueChangedFcn = createCallbackFcn(app, @expoEditFieldValueChanged, true);
+            app.expoEditField.Position = [631 69 100 22];
+            app.expoEditField.Value = 4;
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
