@@ -3,11 +3,13 @@ classdef signalGenerator_exported < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
+        CurrentSenseSwitch              matlab.ui.control.Switch
+        CurrentSenseSwitchLabel         matlab.ui.control.Label
         expoEditField                   matlab.ui.control.NumericEditField
         expoEditField_2Label            matlab.ui.control.Label
         DAQButtonGroup                  matlab.ui.container.ButtonGroup
-        outputsButton_2                 matlab.ui.control.RadioButton
-        outputsButton                   matlab.ui.control.RadioButton
+        outputs4Button                  matlab.ui.control.RadioButton
+        outputs2Button                  matlab.ui.control.RadioButton
         FilenamesPanel                  matlab.ui.container.Panel
         GridLayout8                     matlab.ui.container.GridLayout
         GoButton                        matlab.ui.control.StateButton
@@ -157,7 +159,183 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         UIAxes                          matlab.ui.control.UIAxes
     end
 
+%% currentSense
+    properties (Access = public)
+        Data_Tag = uint8(['DATA']);%uint8([0xA0, 0x76, 0x4E, 0x41, 0xE6, 0x70]); %uint8([0xA0, 0x76, 0x4E, 0x41, 0xBD, 0xDC]);%  Description
+        CurrentSenseDongle
+        recording = false
+        timerStreamHandle
+        timerPlotHandle
+        timerPSDHandle
+        stream = []
 
+        data = uint16([])
+        packetdataLength = 250-2
+        packetmessageLength = 260
+        sensor_mac_map % this is used to map mac adresses to sensor indexes
+
+        first_meas = false;
+
+        FS = 8000
+        TS;
+
+        Vref = 3;
+        G = 11;
+        R = 2e3;
+        Bias = 3/2;
+        ADCBits = 2^16-1;
+        %             Uadc = (raw.*(Vref/ADCBits))-Bias;
+        %             Uin = Uadc./G;
+        %             current = Uin/R;
+        conversionFactorADC = (3/(2^16-1));
+        conversionFactorIn = 1/(11*2e3);
+        packet_ind = [];
+        loss = 0;
+        packet_received = 0;
+
+    end
+
+    methods (Access = private)
+        function current = toAmps(app, raw)
+            current = ((raw*app.conversionFactorADC)-app.Bias)*app.conversionFactorIn;
+        end
+        function current = toMicroAmps(app, raw)
+            current = app.toAmps(raw) * 1e6;
+        end
+
+
+
+        function timerPSDCallback(app, obj, event)
+            for i = 1 : size(app.sensor_mac_map,2)
+                window = floor(8* app.WindowSlider.Value);
+                len = length(app.data{i});
+
+                if(len > window)
+                    plotData = app.toAmps(double(app.data{i}(len-window+1 : len)));
+                    Nfft = floor(window/10);% 1024;app.WindowSlider.Value;
+                    [pxx,f] = pwelch(plotData./(50e-6),gausswin(Nfft),Nfft/2,Nfft,app.FS);
+                    %  [pxx,f] = pwelch(plotData);
+
+                    plot(app.UIAxesPSD, f,10*log10(pxx));
+                    xlim(app.UIAxesPSD,[0,app.FS/2]);
+                    % PSD = mean(10*log10(pxx));
+                    % txt = num2str(PSD);
+                    % text(app.UIAxesPSD, app.FS/4,PSD, txt ,'FontSize',14)
+
+                    [pks,locs, peakwidth, peakProminence] =findpeaks(10*log10(pxx),f);
+                    peaks_prominence = find(peakProminence>5);% &peakwidth>10);
+                    text(app.UIAxesPSD,locs(peaks_prominence)-5,pks(peaks_prominence)+.2,[num2str(round(locs(peaks_prominence)))])
+
+                end
+            end
+            app.Label_Loss.Text = ['Loss ' num2str((length(app.loss)/double(app.packet_received + length(app.loss)))*100) '%'];
+        end
+
+        function timerPlotCallback(app, obj, event)
+            for i = 1 : size(app.sensor_mac_map,2)
+                window = round((app.FS * 1e-3) * app.WindowSlider.Value);
+                t = 0:app.TS:(window-1)/app.FS;
+                len = length(app.data{i});
+                if(len > window)
+                    plotData = app.toMicroAmps(app.data{i}(len-window+1 : len));
+                    plot(app.UIAxesCurrent,t,plotData,'DisplayName',dec2hex(app.sensor_mac_map(2,i)) );
+                    
+                    hold(app.UIAxesCurrent,'on');
+
+                end
+            end
+            hold(app.UIAxesCurrent,'off');
+            legend(app.UIAxesCurrent);
+            %update Loss
+
+
+        end
+
+        function timerStreamCallback(app, obj, event)
+            if(app.CurrentSenseDongle.NumBytesAvailable>=260)
+
+                    app.stream = [app.stream,uint8(app.CurrentSenseDongle.read(app.CurrentSenseDongle.NumBytesAvailable,'uint8'))];
+
+
+                extractData(app, app.stream);
+
+
+            end
+        end
+
+        %extracts data and removes it from the stream
+        function [out] = extractData(app, stream)
+            index = strfind(stream,app.Data_Tag);
+            if(index)
+                out=uint16(NaN(floor(length(stream)/2),4));%max size
+
+                index_of_first_packet(1:4) = 2^16; % max uint16 packet counter value, this is a hacky solution but should should support up to 4 devices
+
+
+                if((index(end)+app.packetmessageLength-1)>length(stream)) % check last received packet is complete
+                    index(end) = []; % remove last index because package is not complete
+                end
+
+                app.stream(1:index(end)+app.packetmessageLength-1) = []; % delete all data that has been read
+
+                for ind = 1 : length(index)
+                    %                 len = uint32(typecast(uint8([stream(index(i)+6),stream(index(i)+7)]),'uint16'));
+                    %                 disp(length(stream));
+                    %                 ende = index(i)+5+len*2;
+                    %                 ende = index(i)+5+len*2;
+
+
+                    mac = swapbytes((typecast([0,0,stream(index(ind)+4:index(ind)+9)],'uint64'))); % add zeroes to make 64bit value and convert
+
+
+                    [~,mac_index] = find(app.sensor_mac_map == mac); % row 1 = indexes; row 2 = mac-value
+                    if(mac_index)
+                    else % mac has not been used yet
+                        len_mac_map = size(app.sensor_mac_map,2)+1;
+                        app.sensor_mac_map(1,len_mac_map) = len_mac_map;
+                        app.sensor_mac_map(2,len_mac_map) = mac;
+                        mac_index = len_mac_map;
+                    end
+
+                    app.packet_received = app.packet_received+1;
+
+
+                    this_ind = (typecast(stream(index(ind)+10:index(ind)+11),'uint16')); % get packet count index
+
+
+
+                    if(this_ind < index_of_first_packet(mac_index)) % this is the first packet of this stream;
+                        index_of_first_packet(mac_index) = this_ind;
+                    end
+                    start(mac_index) = ((this_ind-index_of_first_packet(mac_index))*(app.packetdataLength)/2)+1;     %((ind-1) * (app.packetLength/2) +1);
+                    ende(mac_index) = floor(start(mac_index) + ((app.packetdataLength)/2)-1);
+                    out(mac_index,start(mac_index):ende(mac_index)) = double(typecast(stream(index(ind)+12:index(ind)+12+app.packetdataLength-1),'uint16'));
+
+
+
+                    app.packet_ind{mac_index}(this_ind+1) = this_ind;
+
+                    %   stream(index(ind)+6:index(ind)+5+app.packetLength-1) = NaN;
+
+                end
+                for i = 1 : size(app.sensor_mac_map,2)
+                    start = index_of_first_packet(i)*(app.packetdataLength/2)+1;
+
+                    app.data{i}(start:start+length(out(i,1:ende(i)))-1) = double(out(i,1:ende(i)));
+
+
+                end
+
+                %out = double(out(1:ende)); % remove trailing unneccesary zeroes
+                %out(out==0) = NaN;
+            else
+                out = [];
+            end
+
+        end
+
+    end
+%% DAQ
     methods (Access = private)
 
         function fullSignal = buildSignal(app)
@@ -440,9 +618,10 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
+            %% DAQ
             DQL = daqlist; % get connected device list
             %             DevName = DQL.DeviceID(1); % select the first one (["Dev1", "SimDev1"] or ["SimDev1"])
-            DevName = "Dev4";
+            DevName = "SimDev1";
             % DAQ Dev1 ao0 = Voltage output to Trek
             % DAQ Dev1 ao1 = sync signal
 
@@ -541,6 +720,25 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             end
 
             d.Channels
+
+
+
+            %% currentSense
+            app.TS = 1/app.FS;
+
+            app.timerStreamHandle = timer('TimerFcn', {@app.timerStreamCallback}, 'ExecutionMode', 'FixedRate', 'Period', 0.1,'StartDelay',.1);
+            app.timerPlotHandle = timer('TimerFcn', {@app.timerPlotCallback}, 'ExecutionMode', 'FixedRate', 'Period', .3,'StartDelay',0.5);
+            app.timerPSDHandle = timer('TimerFcn', {@app.timerPSDCallback}, 'ExecutionMode', 'FixedRate', 'Period', 5,'StartDelay',15);
+
+%             app.UIAxesPSD.Visible = 'off';
+            app.GridLayout2.ColumnWidth = [{'1x'},0];
+
+
+            SERIAL_PORT = 'COM11';       % change to device port
+            BAUD_RATE =  11520;
+            app.CurrentSenseDongle = serialport(SERIAL_PORT, BAUD_RATE);
+
+
         end
 
         % Button pushed function: BrowseButton
@@ -976,6 +1174,55 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function expoEditFieldValueChanged(app, event)
             buildPreview(app);                                                
         end
+
+        % Value changed function: CurrentSenseSwitch
+        function CurrentSenseSwitchValueChanged(app, event)
+            value = app.CurrentSenseSwitch.Value;
+            if strcmp(value,'On')
+                app.recording = true;
+                app.CurrentSenseDongle.flush()
+                app.CurrentSenseDongle.write(uint8(1),'uint8');
+                app.CurrentSenseDongle.write(uint8(1),'uint8');
+                app.CurrentSenseDongle.write(uint8(1),'uint8');
+                app.CurrentSenseDongle.write(uint8(1),'uint8');
+
+                app.data = [];
+                app.loss = [];
+                app.packet_received = 0;
+                app.packet_ind = [];
+%                 app.Label_Loss.Text = "";
+%                 app.Lamp.Color = 'green';
+                app.first_meas = true;
+                start(app.timerStreamHandle);
+                start(app.timerPlotHandle);
+                %start(app.timerPSDHandle);
+
+
+
+            else
+                app.recording = false;
+                app.CurrentSenseDongle.write(uint8(2),'uint8');
+                app.CurrentSenseDongle.write(uint8(2),'uint8');
+                app.CurrentSenseDongle.write(uint8(2),'uint8');
+                app.CurrentSenseDongle.write(uint8(2),'uint8');
+                app.CurrentSenseDongle.write(uint8(2),'uint8');
+
+                mac_names = dec2hex(app.sensor_mac_map(2,:));
+                datastruct = cell2struct(app.data,mac_names,2);
+                packetstruct = cell2struct(app.packet_ind,mac_names,2);
+            
+            assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'data'], (datastruct));
+            assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'packets'], (packetstruct));
+            app.data = [];
+            app.loss = [];
+            app.packet_ind = [];
+            stop(app.timerStreamHandle);
+            stop(app.timerPlotHandle);
+            stop(app.timerPSDHandle);
+            app.CurrentSenseDongle.flush();
+            app.Lamp.Color= 'red';
+            end
+        end
     end
 
     % Component initialization
@@ -995,9 +1242,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             xlabel(app.UIAxes, 'Time (s)')
             ylabel(app.UIAxes, 'Voltage (kV)')
             app.UIAxes.PlotBoxAspectRatio = [1.45226130653266 1 1];
-            app.UIAxes.XTickLabelRotation = 0;
-            app.UIAxes.YTickLabelRotation = 0;
-            app.UIAxes.ZTickLabelRotation = 0;
             app.UIAxes.Position = [24 483 1099 270];
 
             % Create SetupPanel_2
@@ -2002,18 +2246,18 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.DAQButtonGroup.Title = 'DAQ';
             app.DAQButtonGroup.Position = [101 19 148 72];
 
-            % Create outputsButton
-            app.outputsButton = uiradiobutton(app.DAQButtonGroup);
-            app.outputsButton.Enable = 'off';
-            app.outputsButton.Text = '2 outputs';
-            app.outputsButton.Position = [11 26 71 22];
+            % Create outputs2Button
+            app.outputs2Button = uiradiobutton(app.DAQButtonGroup);
+            app.outputs2Button.Enable = 'off';
+            app.outputs2Button.Text = '2 outputs';
+            app.outputs2Button.Position = [11 26 71 22];
+            app.outputs2Button.Value = true;
 
-            % Create outputsButton_2
-            app.outputsButton_2 = uiradiobutton(app.DAQButtonGroup);
-            app.outputsButton_2.Enable = 'off';
-            app.outputsButton_2.Text = '4 outputs';
-            app.outputsButton_2.Position = [11 4 71 22];
-            app.outputsButton_2.Value = true;
+            % Create outputs4Button
+            app.outputs4Button = uiradiobutton(app.DAQButtonGroup);
+            app.outputs4Button.Enable = 'off';
+            app.outputs4Button.Text = '4 outputs';
+            app.outputs4Button.Position = [11 4 71 22];
 
             % Create expoEditField_2Label
             app.expoEditField_2Label = uilabel(app.UIFigure);
@@ -2026,6 +2270,17 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.expoEditField.ValueChangedFcn = createCallbackFcn(app, @expoEditFieldValueChanged, true);
             app.expoEditField.Position = [631 69 100 22];
             app.expoEditField.Value = 4;
+
+            % Create CurrentSenseSwitchLabel
+            app.CurrentSenseSwitchLabel = uilabel(app.UIFigure);
+            app.CurrentSenseSwitchLabel.HorizontalAlignment = 'center';
+            app.CurrentSenseSwitchLabel.Position = [290 30 80 22];
+            app.CurrentSenseSwitchLabel.Text = 'CurrentSense';
+
+            % Create CurrentSenseSwitch
+            app.CurrentSenseSwitch = uiswitch(app.UIFigure, 'slider');
+            app.CurrentSenseSwitch.ValueChangedFcn = createCallbackFcn(app, @CurrentSenseSwitchValueChanged, true);
+            app.CurrentSenseSwitch.Position = [306 67 45 20];
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
