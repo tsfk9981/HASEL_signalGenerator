@@ -157,11 +157,26 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         UIAxes                          matlab.ui.control.UIAxes
     end
 
+    %% DAQ
+    properties (Access = public)
+        d;
+        Arr;
+        fullSignal;
+        scanCount = 0;
+        timeInit = 1;
+        lastDataIndex = 0;
+        kV;
+        kI = 200; %todo: input from the panel
+        kF;
+        kL;
+        type_DAQ = 2;
+    end
+    
     %% currentSense
     properties (Access = public)
         Data_Tag = uint8(['DATA']);%uint8([0xA0, 0x76, 0x4E, 0x41, 0xE6, 0x70]); %uint8([0xA0, 0x76, 0x4E, 0x41, 0xBD, 0xDC]);%  Description
         CurrentSenseDongle
-        recording = false
+        CurrentSense_recording = false
         timerStreamHandle
         timerPlotHandle
         timerPSDHandle
@@ -332,46 +347,50 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         end
         function start_currentSense(app)
-            app.recording = true;
-            app.CurrentSenseDongle.flush()
-            app.CurrentSenseDongle.write(uint8(1),'uint8');
-            app.CurrentSenseDongle.write(uint8(1),'uint8');
-            app.CurrentSenseDongle.write(uint8(1),'uint8');
-            app.CurrentSenseDongle.write(uint8(1),'uint8');
+            if app.CurrentSense_recording == false
+                app.CurrentSense_recording = true;
+                app.CurrentSenseDongle.flush()
+                app.CurrentSenseDongle.write(uint8(1),'uint8');
+                app.CurrentSenseDongle.write(uint8(1),'uint8');
+                app.CurrentSenseDongle.write(uint8(1),'uint8');
+                app.CurrentSenseDongle.write(uint8(1),'uint8');
 
-            app.data = [];
-            app.loss = [];
-            app.packet_received = 0;
-            app.packet_ind = [];
-            %                 app.Label_Loss.Text = "";
-            %                 app.Lamp.Color = 'green';
-            app.first_meas = true;
-            start(app.timerStreamHandle);
-            start(app.timerPlotHandle);
-            %start(app.timerPSDHandle);
+                app.data = [];
+                app.loss = [];
+                app.packet_received = 0;
+                app.packet_ind = [];
+                %                 app.Label_Loss.Text = "";
+                %                 app.Lamp.Color = 'green';
+                app.first_meas = true;
+                start(app.timerStreamHandle);
+                start(app.timerPlotHandle);
+                %start(app.timerPSDHandle);
+            end
         end
         function stop_currentSense(app)
-            app.recording = false;
-            app.CurrentSenseDongle.write(uint8(2),'uint8');
-            app.CurrentSenseDongle.write(uint8(2),'uint8');
-            app.CurrentSenseDongle.write(uint8(2),'uint8');
-            app.CurrentSenseDongle.write(uint8(2),'uint8');
-            app.CurrentSenseDongle.write(uint8(2),'uint8');
+            if app.CurrentSense_recording
+                app.CurrentSense_recording = false;
+                app.CurrentSenseDongle.write(uint8(2),'uint8');
+                app.CurrentSenseDongle.write(uint8(2),'uint8');
+                app.CurrentSenseDongle.write(uint8(2),'uint8');
+                app.CurrentSenseDongle.write(uint8(2),'uint8');
+                app.CurrentSenseDongle.write(uint8(2),'uint8');
 
-            mac_names = dec2hex(app.sensor_mac_map(2,:));
-            datastruct = cell2struct(app.data,mac_names,2);
-            packetstruct = cell2struct(app.packet_ind,mac_names,2);
+                mac_names = dec2hex(app.sensor_mac_map(2,:));
+                datastruct = cell2struct(app.data,mac_names,2);
+                packetstruct = cell2struct(app.packet_ind,mac_names,2);
 
-            assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'data'], (datastruct));
-            assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'packets'], (packetstruct));
-            app.data = [];
-            app.loss = [];
-            app.packet_ind = [];
-            stop(app.timerStreamHandle);
-            stop(app.timerPlotHandle);
-            stop(app.timerPSDHandle);
-            app.CurrentSenseDongle.flush();
-            app.Lamp.Color= 'red';
+                assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'data'], (datastruct));
+                assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'packets'], (packetstruct));
+                app.data = [];
+                app.loss = [];
+                app.packet_ind = [];
+                stop(app.timerStreamHandle);
+                stop(app.timerPlotHandle);
+                stop(app.timerPSDHandle);
+                app.CurrentSenseDongle.flush();
+                %             app.Lamp.Color= 'red';
+            end
         end
 
     end
@@ -379,21 +398,18 @@ classdef signalGenerator_exported < matlab.apps.AppBase
     %% DAQ
     methods (Access = private)
 
-        function fullSignal = buildSignal(app)
-            global kV timeInit
-            timeInit = 1;
-
+        function buildSignal(app)
             timeTotal = app.TotaltimeEditField.Value;
             sampRate = app.SamplerateEditField.Value;
 
             % Build voltage signals
-            time = [-timeInit: 1/sampRate: timeTotal - 1/sampRate]';
+            time = [-app.timeInit: 1/sampRate: timeTotal - 1/sampRate]';
 
 
-            voltageSignal_1 = createBaseSignal(app, app.method1DropDown.Value, app.dutyratio1EditField.Value, app.rampspeed1EditField.Value, time, timeInit);
-            voltageSignal_2 = createBaseSignal(app, app.method2DropDown.Value, app.dutyratio2EditField.Value, app.rampspeed2EditField.Value, time, timeInit);
-            voltageSignal_3 = createBaseSignal(app, app.method3DropDown.Value, app.dutyratio3EditField.Value, app.rampspeed3EditField.Value, time, timeInit);
-            voltageSignal_4 = createBaseSignal(app, app.method4DropDown.Value, app.dutyratio4EditField.Value, app.rampspeed4EditField.Value, time, timeInit);
+            voltageSignal_1 = createBaseSignal(app, app.method1DropDown.Value, app.dutyratio1EditField.Value, app.rampspeed1EditField.Value, time);
+            voltageSignal_2 = createBaseSignal(app, app.method2DropDown.Value, app.dutyratio2EditField.Value, app.rampspeed2EditField.Value, time);
+            voltageSignal_3 = createBaseSignal(app, app.method3DropDown.Value, app.dutyratio3EditField.Value, app.rampspeed3EditField.Value, time);
+            voltageSignal_4 = createBaseSignal(app, app.method4DropDown.Value, app.dutyratio4EditField.Value, app.rampspeed4EditField.Value, time);
 
             voltageSignal_1 = voltageSignal_1/app.gain1EditField.Value;
             voltageSignal_2 = voltageSignal_2/app.gain2EditField.Value;
@@ -402,25 +418,24 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
             if app.delayCheckBox.Value
 
-                voltageSignal_1 = shiftPhase(app, voltageSignal_1, app.delay1EditField.Value, timeInit);
-                voltageSignal_2 = shiftPhase(app, voltageSignal_2, app.delay2EditField.Value, timeInit);
-                voltageSignal_3 = shiftPhase(app, voltageSignal_3, app.delay3EditField.Value, timeInit);
-                voltageSignal_4 = shiftPhase(app, voltageSignal_4, app.delay4EditField.Value, timeInit);
+                voltageSignal_1 = shiftPhase(app, voltageSignal_1, app.delay1EditField.Value);
+                voltageSignal_2 = shiftPhase(app, voltageSignal_2, app.delay2EditField.Value);
+                voltageSignal_3 = shiftPhase(app, voltageSignal_3, app.delay3EditField.Value);
+                voltageSignal_4 = shiftPhase(app, voltageSignal_4, app.delay4EditField.Value);
 
             end
 
             refSignal = zeros(size(time)); % dump signal, originally used for reference signal for TF estimation
 
-            fullSignal = [time, refSignal, voltageSignal_1, voltageSignal_2, voltageSignal_3, voltageSignal_4];
+            app.fullSignal = [time, refSignal, voltageSignal_1, voltageSignal_2, voltageSignal_3, voltageSignal_4];
         end
 
-        function Out = createBaseSignal(app, method, dutyRatio, rampSpd, time, timeInit)
-            global kV
+        function Out = createBaseSignal(app, method, dutyRatio, rampSpd, time)
             sampRate = app.SamplerateEditField.Value;
             frequency = app.frequencyEditField.Value/2;
-            maxVoltage = app.MaxvoltageEditField.Value/kV;
+            maxVoltage = app.MaxvoltageEditField.Value/app.kV;
             timeTotal = app.TotaltimeEditField.Value;
-            totalSamples = (timeInit + timeTotal)*sampRate;
+            totalSamples = (app.timeInit + timeTotal)*sampRate;
 
             signalBase = sin(time*2*pi*frequency);
             %             keyboard
@@ -447,8 +462,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
                 case 'step'
                     while 1
-                        indStart = fix(timeInit*sampRate) + i*indDurationCycle + 1;
-                        indEnd = fix(timeInit*sampRate) + (i+1)*indDurationCycle +1;
+                        indStart = fix(app.timeInit*sampRate) + i*indDurationCycle + 1;
+                        indEnd = fix(app.timeInit*sampRate) + (i+1)*indDurationCycle +1;
 
                         if indEnd <= totalSamples + 1
                             voltageSignal(indStart + fix(indDurationCycle*dutyRatio/100): min(indEnd, length(voltageSignal))) = 0;
@@ -463,8 +478,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
                 case 'ramped square'
                     while 1
-                        indStart = fix(timeInit*sampRate) + i*indDurationCycle + 1;
-                        indEnd = fix(timeInit*sampRate) + (i+1)*indDurationCycle + 1;
+                        indStart = fix(app.timeInit*sampRate) + i*indDurationCycle + 1;
+                        indEnd = fix(app.timeInit*sampRate) + (i+1)*indDurationCycle + 1;
 
                         if indEnd <= totalSamples + 1
                             indDurationRamp = fix(maxVoltage/rampSpd*sampRate);
@@ -501,11 +516,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             end
             Out = voltageSignal;
         end
-        function Out = shiftPhase(app, Data, phase, timeInit)
+        function Out = shiftPhase(app, Data, phase)
             sampRate = app.SamplerateEditField.Value;
             freq = app.frequencyEditField.Value;
 
-            ind_signalStart = fix(timeInit*sampRate) + 1;
+            ind_signalStart = fix(app.timeInit*sampRate) + 1;
 
             Data_init = Data(1: ind_signalStart - 1);
             Data_signal = Data(ind_signalStart: end);
@@ -527,20 +542,19 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
 
         function buildPreview(app)
-            global kV
             sampRate = app.SamplerateEditField.Value;
             maxVoltage = app.MaxvoltageEditField.Value;
 
-            fullSignal = buildSignal(app);
-            time = linspace(0, length(fullSignal)/sampRate, length(fullSignal));
+            buildSignal(app);
+%             time = linspace(0, length(app.fullSignal)/sampRate, length(app.fullSignal));
 
             cla(app.UIAxes, "reset")
             title(app.UIAxes, 'prescribed signals')
             hold(app.UIAxes, "on")
-            plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 3)*kV);
-            plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 4)*kV);
-            plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 5)*kV);
-            plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 6)*kV);
+            plot(app.UIAxes, app.fullSignal(:, 1), app.fullSignal(:, 3)*app.kV);
+            plot(app.UIAxes, app.fullSignal(:, 1), app.fullSignal(:, 4)*app.kV);
+            plot(app.UIAxes, app.fullSignal(:, 1), app.fullSignal(:, 5)*app.kV);
+            plot(app.UIAxes, app.fullSignal(:, 1), app.fullSignal(:, 6)*app.kV);
             ylim(app.UIAxes, [(-1.5)*maxVoltage, 1.5*maxVoltage])
             ylabel(app.UIAxes, 'Voltage (kV)');
             grid(app.UIAxes, 'on')
@@ -552,77 +566,64 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function storeData(app, ~, ~)
             % This function is called every n = scansAvailableFcnCount data
             % points read by the DAQ
-            global d timeArr voltageArr1 currentArr1 voltageArr2 currentArr2 voltageArr3 currentArr3 voltageArr4 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex
 
-            numScansAvailable = d.NumScansAvailable;
+            numScansAvailable = app.d.NumScansAvailable;
             if numScansAvailable == 0
                 return;
             end
-            scanCount = scanCount + 1;
+            app.scanCount = app.scanCount + 1;
 
 
-            startIndex = (scanCount - 1)*d.ScansAvailableFcnCount + 1;
+            startIndex = (app.scanCount - 1)*app.d.ScansAvailableFcnCount + 1;
             % location to put next data
             endIndex = (startIndex - 1) + numScansAvailable;
             % location of end of new data
-            lastDataIndex = endIndex;
+            app.lastDataIndex = endIndex;
             % this global index tells the program where the last data
             % point is, in case of test interruption
 
             % Read available data from DAQ
-            scanData = read(d, numScansAvailable, "OutputFormat", "Matrix");
-            voltage1 = scanData(:, 1);
-            voltageArr1(startIndex: endIndex) = voltage1;
+            scanData = read(app.d, numScansAvailable, "OutputFormat", "Matrix");
+
+            app.Arr.voltage1(startIndex: endIndex) = scanData(:, 1);
             % channel 1 is voltage input from Trek 1(in volts)
 
-            current1 = scanData(:, 2);
-            currentArr1(startIndex: endIndex) = current1;
+            app.Arr.current1(startIndex: endIndex) = scanData(:, 2);
             % channel 2 is current input from Trek 1 (in volts)
 
-            voltage2 = scanData(:, 3);
-            voltageArr2(startIndex: endIndex) = voltage2;
+            app.Arr.voltage2(startIndex: endIndex) = scanData(:, 3);
             % channel 3 is voltage input from Trek 2 (in volts)
 
-            current2 = scanData(:, 4);
-            currentArr2(startIndex: endIndex) = current2;
+            app.Arr.current2(startIndex: endIndex) = scanData(:, 4);
             % channel 4 is current input from Trek 2 (in volts)
 
-            voltage3 = scanData(:, 5);
-            voltageArr3(startIndex: endIndex) = voltage3;
+            app.Arr.voltage3(startIndex: endIndex) = scanData(:, 5);
             % channel 5 is voltage input from Trek 3 (in volts)
 
-            current3 = scanData(:, 6);
-            currentArr3(startIndex: endIndex) = current3;
+            app.Arr.current3(startIndex: endIndex) = scanData(:, 6);
             % channel 6 is current input from Trek 3 (in volts)
 
-            voltage4 = scanData(:, 7);
-            voltageArr4(startIndex: endIndex) = voltage4;
+            app.Arr.voltage4(startIndex: endIndex) = scanData(:, 7);
             % channel 7 is voltage input from Trek 4 (in volts)
 
-            current4 = scanData(:, 8);
-            currentArr4(startIndex: endIndex) = current4;
+            app.Arr.current4(startIndex: endIndex) = scanData(:, 8);
             % channel 8 is current input from Trek 4 (in volts)
 
-            if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
+            if app.type_DAQ == 4
 
-                angle1 = scanData(:, 9);
-                angleArr1(startIndex: endIndex) = angle1;
+                app.Arr.angle1(startIndex: endIndex) = scanData(:, 9);
                 % channel 16 is encoder angle 1 (in volts)
 
-                angle2 = scanData(:, 10);
-                angleArr2(startIndex: endIndex) = angle2;
+                app.Arr.angle2(startIndex: endIndex) = scanData(:, 10);
                 % channel 17 is encoder angle 2 (in volts)
 
-                fp1 = scanData(:, 11);
-                fpArr1(startIndex: endIndex) = fp1;
+                app.Arr.fp1(startIndex: endIndex) = scanData(:, 11);
                 % channel 20 is force plate X (in volts)
 
-                fp2 = scanData(:, 12);
-                fpArr2(startIndex: endIndex) = fp2;
+                app.Arr.fp2(startIndex: endIndex) = scanData(:, 12);
                 % channel 21 is force plate Y (in volts)
 
-                fp3 = scanData(:, 13);
-                fpArr3(startIndex: endIndex) = fp3;
+                app.Arr.fp3(startIndex: endIndex) = scanData(:, 13);
                 % channel 22 is force plate Z (in volts)
 
             end
@@ -656,14 +657,81 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             %             end
 
 
-            if endIndex == length(timeArr)
-                stop_currentSense(app);
+            if endIndex == length(app.Arr.time)
+                stop_measurement(app);
                 disp('successfully end')
+                goButtonReady(app);
+
             end
         end
 
-        function start_DAQ(app, fullSignal)
-            global d timeArr voltageArr1 currentArr1 voltageArr2 currentArr2 voltageArr3 currentArr3 voltageArr4 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex
+        function setArr(app)
+
+            % Build output signal and preload
+            app.Arr.time = app.fullSignal(:, 1);
+            app.Arr.voltageRef1 = app.fullSignal(:, 3);
+            app.Arr.voltageRef2 = app.fullSignal(:, 4);
+            app.Arr.voltageRef3 = app.fullSignal(:, 5);
+            app.Arr.voltageRef4 = app.fullSignal(:, 6);
+
+            app.Arr.voltage1 = zeros(length(app.fullSignal), 1);
+            app.Arr.current1 = zeros(length(app.fullSignal), 1);
+            app.Arr.voltage2 = zeros(length(app.fullSignal), 1);
+            app.Arr.current2 = zeros(length(app.fullSignal), 1);
+            app.Arr.voltage3 = zeros(length(app.fullSignal), 1);
+            app.Arr.current3 = zeros(length(app.fullSignal), 1);
+            app.Arr.voltage4 = zeros(length(app.fullSignal), 1);
+            app.Arr.current4 = zeros(length(app.fullSignal), 1);
+
+            app.Arr.angle1 = zeros(length(app.fullSignal), 1);
+            app.Arr.angle2 = zeros(length(app.fullSignal), 1);
+            app.Arr.fp1 = zeros(length(app.fullSignal), 1);
+            app.Arr.fp2 = zeros(length(app.fullSignal), 1);
+            app.Arr.fp3 = zeros(length(app.fullSignal), 1);
+        end
+        
+        function start_DAQ(app)
+
+            if app.type_DAQ == 4
+                preload(app.d, app.fullSignal(:, 3:6));
+            else
+                preload(app.d, app.fullSignal(:, 3:4));
+            end
+
+            start(app.d);
+
+
+        end
+
+        function stop_DAQ(app)
+            % Stop the DAQ
+            if app.d.Running
+                stop(app.d);
+            end
+
+            % stop the currentSense
+            %                 currentSense_stop(app);
+
+            % Read residual data from DAQ
+            if app.d.NumScansAvailable > 0
+                storeData(app, app.d, 0);
+            end
+        end
+
+        function plot_result(app)
+            cla(app.UIAxes, "reset")
+            title(app.UIAxes, 'overall plot');
+            yyaxis(app.UIAxes, 'left');
+            plot(app.UIAxes, app.Arr.time, app.Arr.voltage1);
+            ylabel(app.UIAxes, 'voltage [kV]');
+            yyaxis(app.UIAxes, 'right');
+            plot(app.UIAxes, app.Arr.time, app.Arr.current1);
+            ylabel(app.UIAxes, 'current [uA]');
+            xlabel(app.UIAxes, 'time [s]')
+            grid(app.UIAxes, "on")
+        end
+
+        function check_fname(app)
 
             % Check for valid filenames
             if app.ProcessedfilenameEditField == ""
@@ -689,70 +757,212 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 app.GoButton.Value = 0;
                 return
             end
+        end
 
-            app.GoButton.Text = "Stop (active)";
-            app.GoButton.BackgroundColor = 'red';
-            if app.MonitorlimittripstatusCheckBox.Value
-                app.Lamp.Color = 'green';
+        function saveData(app)
+
+            % file saves
+            if app.SaverawfileCheckBox.Value
+                textPara = [...
+                    app.method1DropDown.Value(1), '_',...
+                    num2str(app.MaxvoltageEditField.Value*10,   '%02.0f'), 'kV_',...
+                    num2str(app.frequencyEditField.Value*10, '%03.0f'), 'Hz_',...
+                    num2str(app.SamplerateEditField.Value,   '%04.0f'), 'Hz_',...
+                    num2str(app.dutyratio2EditField.Value,   '%04.0f'), 'duty_',...
+                    num2str(app.expoEditField.Value,         '%02.0f'), 'exp_',...
+                    num2str(app.delay1EditField.Value,       '%03.0f'), 'deg_',...
+                    num2str(app.delay2EditField.Value,       '%03.0f'), 'deg_',...
+                    num2str(app.delay3EditField.Value,       '%03.0f'), 'deg_',...
+                    num2str(app.delay4EditField.Value,       '%03.0f'), 'deg_',...
+                    ];
+                rawFilename = fullfile(app.SelectfilepathEditField.Value,...
+                    [app.RawfileprefixEditField.Value, app.ProcessedfilenameEditField.Value, '_', textPara, datestr(now,'yyyy_mm_dd_HHMM_SS'), '.dat']);
+
+
+
+                writetable(table(...
+                    app.Arr.time,...
+                    app.Arr.voltageRef1*app.kV,...
+                    app.Arr.voltageRef2*app.kV,...
+                    app.Arr.voltageRef3*app.kV,...
+                    app.Arr.voltageRef4*app.kV,...
+                    app.Arr.voltage1*app.kV,...
+                    app.Arr.current1*app.kI,...
+                    app.Arr.voltage2*app.kV,...
+                    app.Arr.current2*app.kI,...
+                    app.Arr.voltage3*app.kV,...
+                    app.Arr.current3*app.kI,...
+                    app.Arr.voltage4*app.kV,...
+                    app.Arr.current4*app.kI,...
+                    app.Arr.angle1,...
+                    app.Arr.angle2,...
+                    app.Arr.fp1,...
+                    app.Arr.fp2,...
+                    app.Arr.fp3,...
+                    'VariableNames', {...
+                    'Time [s]',...
+                    'Voltage ref 1[kV]',...
+                    'Voltage ref 2[kV]',...
+                    'Voltage ref 3[kV]',...
+                    'Voltage ref 4[kV]',...
+                    'Voltage 1 [kV]',...
+                    'Current 1 [uA]',...
+                    'Voltage 2 [kV]',...
+                    'Current 2 [uA]',...
+                    'Voltage 3 [kV]',...
+                    'Current 3 [uA]',...
+                    'Voltage 4 [kV]',...
+                    'Current 4 [uA]',...
+                    'Angle 1 [V]',...
+                    'Angle 2 [V]',...
+                    'force 1 [V]',...
+                    'force 2 [V]',...
+                    'force 3 [V]',...
+                    }), rawFilename);
             end
+            %                 processedFilename = fullfile(app.SelectfilepathEditField.Value, [app.ProcessedfilenameEditField.Value ,'_sineSweep_', textPara]);
+            %                 writetable(table(processedCurve(:, 1), processedCurve(:, 2), processedCurve(:, 3), 'VariableNames',...
+            %                     {'Frequency [Hz]', 'Amplitude [dB]', 'Phase [deg]'}), processedFilename);
+        end
 
-            % connect to Arduino
-            %                 devArduino = serialport(app.USBportDropDown, int(str2num(app.baudrateDropDown)));
-
-
-
-            % Build output signal and preload
-            timeArr = fullSignal(:, 1);
-            voltageArr1 = zeros(length(fullSignal), 1);
-            currentArr1 = zeros(length(fullSignal), 1);
-            voltageArr2 = zeros(length(fullSignal), 1);
-            currentArr2 = zeros(length(fullSignal), 1);
-            voltageArr3 = zeros(length(fullSignal), 1);
-            currentArr3 = zeros(length(fullSignal), 1);
-            voltageArr4 = zeros(length(fullSignal), 1);
-            currentArr4 = zeros(length(fullSignal), 1);
-            angleArr1 = zeros(length(fullSignal), 1);
-            angleArr2 = zeros(length(fullSignal), 1);
-            fpArr1 = zeros(length(fullSignal), 1);
-            fpArr2 = zeros(length(fullSignal), 1);
-            fpArr3 = zeros(length(fullSignal), 1);
-
-            scanCount = 0;
-            if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
-                preload(d, fullSignal(:, 3:6));
-            else
-                preload(d, fullSignal(:, 3:4));
-            end
-            %                 while 1 % wait for trigger
-            %                     tmp = read(d, "OutputFormat","Matrix");
-            %                     if tmp(:, 5) > 4 % 5V trigger
-            %                         break
-            %                     end
-            %                 end
-
-            start(d);
+        function start_measurement(app)
+            buildSignal(app);
+            setArr(app);
+            start_DAQ(app);
+            app.scanCount = 0;
             start_currentSense(app);
+            goButtonRecording(app);
+        end
+
+        function stop_measurement(app)
+            stop_DAQ(app);
+            stop_currentSense(app);
+            goButtonSaving(app);
+            plot_result(app);
+            saveData(app)
+
+            % Fush the DAQ and ensure zero voltage
+            flush(app.d);
+            if app.type_DAQ == 4
+                write(app.d, [0, 0, 0, 0]);
+            else
+                write(app.d, [0, 0]);
+            end
 
         end
 
-        function stop_DAQ(app)
-            global d timeArr voltageArr1 currentArr1 voltageArr2 currentArr2 voltageArr3 currentArr3 voltageArr4 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex
-            % End test
-
-            % Stop the DAQ
-            if d.Running
-                stop(d);
-            end
-
-            % stop the currentSense
-            %                 currentSense_stop(app);
-
-            % Read residual data from DAQ
-            if d.NumScansAvailable > 0
-                storeData(app, d, 0);
-            end
+        function goButtonReady(app)
+            app.GoButton.BackgroundColor = 'green';
+            app.GoButton.Text = 'Run';
+            app.GoButton.Value = 0;
         end
+        function goButtonSuspection(app)
+            app.GoButton.BackgroundColor = 'yellow';
+            app.GoButton.Text = {'incorrect', 'stop', 'data length=', num2str(app.lastDataIndex)};
+            warning('check the data saved')
+            dataLength = app.lastDataIndex
+            app.GoButton.Value = 0;
+        end
+        function goButtonRecording(app)
+            app.GoButton.BackgroundColor = 'red';
+            app.GoButton.Text = 'Recording';
+            app.GoButton.Value = 1;
+        end
+        function goButtonSaving(app)
+            app.GoButton.BackgroundColor = 'white';
+            app.GoButton.Text = 'Saving';
+            app.GoButton.Value = 1;
+        end
+
+        function setup_DAQ(app)
+%             DQL = daqlist; % get connected device list
+            %             DevName = DQL.DeviceID(1); % select the first one (["Dev1", "SimDev1"] or ["SimDev1"])
+            DevName = "Dev3";
+
+            if app.DAQButtonGroup.SelectedObject.Text == "4 outputs"
+                app.type_DAQ = 4;
+            else
+                app.type_DAQ = 2;
+            end
+                        app.d = daq("ni");
+            app.d.Rate = app.SamplerateEditField.Value;
+
+            app.d.ScansAvailableFcn = @(src, event) storeData(app, src, event);
+            % call storeData fcn when scans are available
+
+            app.d.ScansAvailableFcnCount = 'auto';
+            % d.ScansAvailableFcnCount = app.SamplerateEditField.Value*1; % every 1 second
+            % by default, call storeData every cycle
+
+            defineChannels(app, DevName);
+            app.d.Channels
+            flush(app.d);
+
+        end
+
+        function defineChannels(app, DevName)
+
+            addoutput(app.d, DevName, "ao0", "Voltage");
+            % voltage output to TREk1
+
+            addoutput(app.d, DevName, "ao1", "Voltage");
+            % voltage output to TREk2
+
+            if app.type_DAQ == 4
+                addoutput(app.d, DevName, "ao2", "Voltage");
+                % voltage output to TREk3
+
+                addoutput(app.d, DevName, "ao3", "Voltage");
+                % voltage output to TREk4
+            end
+
+            addinput(app.d, DevName, "ai0", "Voltage");
+            % TREK 1 voltage monitor
+
+            addinput(app.d, DevName, "ai1", "Voltage");
+            % TREK 1 current monitor
+
+            addinput(app.d, DevName, "ai2", "Voltage");
+            % TREK 2 voltage monitor
+
+            addinput(app.d, DevName, "ai3", "Voltage");
+            % TREK 2 current monitor
+
+            addinput(app.d, DevName, "ai4", "Voltage");
+            % TREK 3 voltage monitor
+
+            addinput(app.d, DevName, "ai5", "Voltage");
+            % TREK 3 current monitor
+
+            addinput(app.d, DevName, "ai6", "Voltage");
+            % TREK 4 voltage monitor
+
+            addinput(app.d, DevName, "ai7", "Voltage");
+            % TREK 4 current monitor
+
+            if app.type_DAQ == 4
+                addinput(app.d, DevName, "ai16", "Voltage");
+                % hip angle
+
+                addinput(app.d, DevName, "ai17", "Voltage");
+                % knee angle
+
+                addinput(app.d, DevName, "ai20", "Voltage");
+                % force plate X
+
+                addinput(app.d, DevName, "ai21", "Voltage");
+                % force plate Y
+
+                addinput(app.d, DevName, "ai22", "Voltage");
+                % force plate Z
+
+
+            end
+
+        end
+
     end
+
 
 
 
@@ -761,27 +971,18 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
+            app.GoButton.Text = 'Wait';
+            app.GoButton.BackgroundColor = 'yellow';
             %% DAQ
-            DQL = daqlist; % get connected device list
-            %             DevName = DQL.DeviceID(1); % select the first one (["Dev1", "SimDev1"] or ["SimDev1"])
-            DevName = "Dev3";
-            % DAQ Dev1 ao0 = Voltage output to Trek
-            % DAQ Dev1 ao1 = sync signal
-
-            % DAQ Dev1 ai0 = Voltage monitor from Trek
-            % DAQ Dev1 ai1 = Force monitor from muscle tester
-            % DAQ Dev1 ai2 = Displacement monitor from muscle tester
-            % DAQ Dev1 ai7 = Trek limit monitor (not used so far)
-            % DAQ Dev1 ai6 = Triger signal from HS camera (4.2V?)
-
-            global d kF kL kV
-
-            kV = app.TREKvoltageconstantkVEditField.Value;
-            kF = app.MTforceconstantkFEditField.Value;
-            kL = app.MTlengthconstantkLEditField.Value;
+            setup_DAQ(app);
+            app.kV = app.TREKvoltageconstantkVEditField.Value;
+            app.kF = app.MTforceconstantkFEditField.Value;
+            app.kL = app.MTlengthconstantkLEditField.Value;
 
             app.RawfileprefixEditField.Enable = 0;
-            app.GoButton.Text = 'Go (inactive)';
+
+
+            
             if app.MonitorlimittripstatusCheckBox.Value
                 app.Lamp.Enable = 1;
                 app.Lamp.Color = 'green';
@@ -792,77 +993,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
             buildPreview(app);
 
-            d = daq("ni");
-            d.Rate = app.SamplerateEditField.Value;
-
-            d.ScansAvailableFcn = @(src, event) storeData(app, src, event);
-            % call storeData fcn when scans are available
-
-            d.ScansAvailableFcnCount = 'auto';
-            %             d.ScansAvailableFcnCount = app.SamplerateEditField.Value*1;
-            % every 1 second
-            % by default, call storeData every cycle
-
-
-
-            addoutput(d, DevName, "ao0", "Voltage");
-            % voltage output to TREk1
-
-            addoutput(d, DevName, "ao1", "Voltage");
-            % voltage output to TREk2
-
-            if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
-                addoutput(d, DevName, "ao2", "Voltage");
-                % voltage output to TREk3
-
-                addoutput(d, DevName, "ao3", "Voltage");
-                % voltage output to TREk4
-            end
-
-            addinput(d, DevName, "ai0", "Voltage");
-            % TREK 1 voltage monitor
-
-            addinput(d, DevName, "ai1", "Voltage");
-            % TREK 1 current monitor
-
-            addinput(d, DevName, "ai2", "Voltage");
-            % TREK 2 voltage monitor
-
-            addinput(d, DevName, "ai3", "Voltage");
-            % TREK 2 current monitor
-
-            addinput(d, DevName, "ai4", "Voltage");
-            % TREK 3 voltage monitor
-
-            addinput(d, DevName, "ai5", "Voltage");
-            % TREK 3 current monitor
-
-            addinput(d, DevName, "ai6", "Voltage");
-            % TREK 4 voltage monitor
-
-            addinput(d, DevName, "ai7", "Voltage");
-            % TREK 4 current monitor
-
-            if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
-                addinput(d, DevName, "ai16", "Voltage");
-                % hip angle
-
-                addinput(d, DevName, "ai17", "Voltage");
-                % knee angle
-
-                addinput(d, DevName, "ai20", "Voltage");
-                % force plate X
-
-                addinput(d, DevName, "ai21", "Voltage");
-                % force plate Y
-
-                addinput(d, DevName, "ai22", "Voltage");
-                % force plate Z
-
-
-            end
-
-            d.Channels
+            goButtonReady(app);
 
 
 
@@ -880,9 +1011,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             SERIAL_PORT = 'COM11';       % change to device port
             BAUD_RATE =  11520;
             app.CurrentSenseDongle = serialport(SERIAL_PORT, BAUD_RATE);
-            %             pause(1);
-
-            %             currentSense_stop(app);
 
 
         end
@@ -900,108 +1028,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         % Value changed function: GoButton
         function GoButtonValueChanged(app, event)
-            global d timeArr voltageArr1 voltageArr2 voltageArr3 voltageArr4 currentArr1 currentArr2 currentArr3 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex kV kF kL
-
-
-            fullSignal = buildSignal(app);
-
             if app.GoButton.Value % start test
-                start_DAQ(app, fullSignal);
+                start_measurement(app);
             else
-                stop_DAQ(app);
-
-
-
-                cla(app.UIAxes, "reset")
-                title(app.UIAxes, 'overall plot');
-                yyaxis(app.UIAxes, 'left');
-                plot(app.UIAxes, timeArr, voltageArr1);
-                ylabel(app.UIAxes, 'voltage [kV]');
-                yyaxis(app.UIAxes, 'right');
-                plot(app.UIAxes, timeArr, currentArr1);
-                ylabel(app.UIAxes, 'current [uA]');
-                xlabel(app.UIAxes, 'time [s]')
-                grid(app.UIAxes, "on")
-
-                % Bode plot processing
-                %                 processedCurve = generateBode(app, fullSignal(:, 4));
-                %                 plotBode(app, processedCurve);
-
-                % file saves
-                if app.SaverawfileCheckBox.Value
-                    textPara = [...
-                        app.method1DropDown.Value(1), '_',...
-                        num2str(app.MaxvoltageEditField.Value*10,   '%02.0f'), 'kV_',...
-                        num2str(app.frequencyEditField.Value*10, '%03.0f'), 'Hz_',...
-                        num2str(app.SamplerateEditField.Value,   '%04.0f'), 'Hz_',...
-                        num2str(app.dutyratio2EditField.Value,   '%04.0f'), 'duty_',...
-                        num2str(app.expoEditField.Value,         '%02.0f'), 'exp_',...
-                        num2str(app.delay1EditField.Value,       '%03.0f'), 'deg_',...
-                        num2str(app.delay2EditField.Value,       '%03.0f'), 'deg_',...
-                        num2str(app.delay3EditField.Value,       '%03.0f'), 'deg_',...
-                        num2str(app.delay4EditField.Value,       '%03.0f'), 'deg_',...
-                        ];
-                    rawFilename = fullfile(app.SelectfilepathEditField.Value,...
-                        [app.RawfileprefixEditField.Value, app.ProcessedfilenameEditField.Value, '_', textPara, datestr(now,'yyyy_mm_dd_HHMM_SS'), '.dat']);
-
-                    lastDataIndex
-
-
-                    writetable(table(...
-                        fullSignal(:, 1),...
-                        fullSignal(:, 3),...
-                        fullSignal(:, 4),...
-                        fullSignal(:, 5),...
-                        fullSignal(:, 6),...
-                        voltageArr1*kV,...
-                        currentArr1*kV,...
-                        voltageArr2*kV,...
-                        currentArr2*kV,...
-                        voltageArr3*kV,...
-                        currentArr3*kV,...
-                        voltageArr4*kV,...
-                        currentArr4*kV,...
-                        angleArr1,...
-                        angleArr2,...
-                        fpArr1,...
-                        fpArr2,...
-                        fpArr3,...
-                        'VariableNames', {...
-                        'Time [s]',...
-                        'Voltage ref 1[kV]',...
-                        'Voltage ref 2[kV]',...
-                        'Voltage ref 3[kV]',...
-                        'Voltage ref 4[kV]',...
-                        'Voltage 1 [kV]',...
-                        'Current 1 [A]',...
-                        'Voltage 2 [kV]',...
-                        'Current 2 [A]',...
-                        'Voltage 3 [kV]',...
-                        'Current 3 [A]',...
-                        'Voltage 4 [kV]',...
-                        'Current 4 [A]',...
-                        'Angle 1 [V]',...
-                        'Angle 2 [V]',...
-                        'force 1 [V]',...
-                        'force 2 [V]',...
-                        'force 3 [V]',...
-                        }), rawFilename);
-                end
-                %                 processedFilename = fullfile(app.SelectfilepathEditField.Value, [app.ProcessedfilenameEditField.Value ,'_sineSweep_', textPara]);
-                %                 writetable(table(processedCurve(:, 1), processedCurve(:, 2), processedCurve(:, 3), 'VariableNames',...
-                %                     {'Frequency [Hz]', 'Amplitude [dB]', 'Phase [deg]'}), processedFilename);
-                % Fush the DAQ and ensure zero voltage
-                flush(d);
-                if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
-                    write(d, [0, 0, 0, 0]);
-                else
-                    write(d, [0, 0]);
-                end
-
-                app.GoButton.BackgroundColor = [0.96, 0.96, 0.96];
-                app.GoButton.Text = {'Go', '(inactive)'};
-
-
+                stop_measurement(app);
+                goButtonSuspection(app);
             end
         end
 
@@ -1016,27 +1047,23 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         % Value changed function: SamplerateEditField
         function SamplerateEditFieldValueChanged(app, event)
-            global d
-            d.Rate = app.SamplerateEditField.Value;
+            app.d.Rate = app.SamplerateEditField.Value;
             % change scansAvailableFcnCount here
         end
 
         % Value changed function: TREKvoltageconstantkVEditField
         function TREKvoltageconstantkVEditFieldValueChanged(app, event)
-            global kV
-            kV = app.TREKvoltageconstantkVEditField.Value;
+            app.kV = app.TREKvoltageconstantkVEditField.Value;
         end
 
         % Value changed function: MTforceconstantkFEditField
         function MTforceconstantkFEditFieldValueChanged(app, event)
-            global kF
-            kF = app.MTforceconstantkFEditField.Value;
+            app.kF = app.MTforceconstantkFEditField.Value;
         end
 
         % Value changed function: MTlengthconstantkLEditField
         function MTlengthconstantkLEditFieldValueChanged(app, event)
-            global kL
-            kL = app.MTlengthconstantkLEditField.Value;
+            app.kL = app.MTlengthconstantkLEditField.Value;
         end
 
         % Callback function
