@@ -3,8 +3,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
-        CurrentSenseSwitch              matlab.ui.control.Switch
-        CurrentSenseSwitchLabel         matlab.ui.control.Label
         expoEditField                   matlab.ui.control.NumericEditField
         expoEditField_2Label            matlab.ui.control.Label
         DAQButtonGroup                  matlab.ui.container.ButtonGroup
@@ -159,7 +157,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         UIAxes                          matlab.ui.control.UIAxes
     end
 
-%% currentSense
+    %% currentSense
     properties (Access = public)
         Data_Tag = uint8(['DATA']);%uint8([0xA0, 0x76, 0x4E, 0x41, 0xE6, 0x70]); %uint8([0xA0, 0x76, 0x4E, 0x41, 0xBD, 0xDC]);%  Description
         CurrentSenseDongle
@@ -239,7 +237,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 if(len > window)
                     plotData = app.toMicroAmps(app.data{i}(len-window+1 : len));
                     plot(app.UIAxesCurrent,t,plotData,'DisplayName',dec2hex(app.sensor_mac_map(2,i)) );
-                    
+
                     hold(app.UIAxesCurrent,'on');
 
                 end
@@ -254,7 +252,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function timerStreamCallback(app, obj, event)
             if(app.CurrentSenseDongle.NumBytesAvailable>=260)
 
-                    app.stream = [app.stream,uint8(app.CurrentSenseDongle.read(app.CurrentSenseDongle.NumBytesAvailable,'uint8'))];
+                app.stream = [app.stream,uint8(app.CurrentSenseDongle.read(app.CurrentSenseDongle.NumBytesAvailable,'uint8'))];
 
 
                 extractData(app, app.stream);
@@ -333,13 +331,56 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             end
 
         end
+        function start_currentSense(app)
+            app.recording = true;
+            app.CurrentSenseDongle.flush()
+            app.CurrentSenseDongle.write(uint8(1),'uint8');
+            app.CurrentSenseDongle.write(uint8(1),'uint8');
+            app.CurrentSenseDongle.write(uint8(1),'uint8');
+            app.CurrentSenseDongle.write(uint8(1),'uint8');
+
+            app.data = [];
+            app.loss = [];
+            app.packet_received = 0;
+            app.packet_ind = [];
+            %                 app.Label_Loss.Text = "";
+            %                 app.Lamp.Color = 'green';
+            app.first_meas = true;
+            start(app.timerStreamHandle);
+            start(app.timerPlotHandle);
+            %start(app.timerPSDHandle);
+        end
+        function stop_currentSense(app)
+            app.recording = false;
+            app.CurrentSenseDongle.write(uint8(2),'uint8');
+            app.CurrentSenseDongle.write(uint8(2),'uint8');
+            app.CurrentSenseDongle.write(uint8(2),'uint8');
+            app.CurrentSenseDongle.write(uint8(2),'uint8');
+            app.CurrentSenseDongle.write(uint8(2),'uint8');
+
+            mac_names = dec2hex(app.sensor_mac_map(2,:));
+            datastruct = cell2struct(app.data,mac_names,2);
+            packetstruct = cell2struct(app.packet_ind,mac_names,2);
+
+            assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'data'], (datastruct));
+            assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'packets'], (packetstruct));
+            app.data = [];
+            app.loss = [];
+            app.packet_ind = [];
+            stop(app.timerStreamHandle);
+            stop(app.timerPlotHandle);
+            stop(app.timerPSDHandle);
+            app.CurrentSenseDongle.flush();
+            app.Lamp.Color= 'red';
+        end
 
     end
-%% DAQ
+
+    %% DAQ
     methods (Access = private)
 
         function fullSignal = buildSignal(app)
-            global kV
+            global kV timeInit
             timeInit = 1;
 
             timeTotal = app.TotaltimeEditField.Value;
@@ -382,7 +423,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             totalSamples = (timeInit + timeTotal)*sampRate;
 
             signalBase = sin(time*2*pi*frequency);
-%             keyboard
+            %             keyboard
             signalBase(time <= 0) = 0;
             mask = sign(signalBase);
             %             size(signalBase)
@@ -439,7 +480,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                             end
 
                             voltageSignal(indRampUpStart: indKeepOnStart-1) = linspace(0, voltageSignal(indKeepOnStart), indDurationRamp);
-%                             voltageSignal(indKeepOnStart: indRampDownStart-1) = maxVoltage;
+                            %                             voltageSignal(indKeepOnStart: indRampDownStart-1) = maxVoltage;
                             voltageSignal(indRampDownStart: indRampDownEnd-1) = linspace(voltageSignal(indKeepOnStart), 0, indDurationRamp);
                             voltageSignal(indRampDownEnd: min(indEnd, length(voltageSignal))) = 0;
 
@@ -451,7 +492,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                             break
                         end
                     end
-%                     voltageSignal = voltageSignal.*mask;
+                    %                     voltageSignal = voltageSignal.*mask;
 
             end
 
@@ -494,8 +535,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             time = linspace(0, length(fullSignal)/sampRate, length(fullSignal));
 
             cla(app.UIAxes, "reset")
-
-            %             yyaxis(app.UIAxes, 'left');
+            title(app.UIAxes, 'prescribed signals')
             hold(app.UIAxes, "on")
             plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 3)*kV);
             plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 4)*kV);
@@ -503,12 +543,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 6)*kV);
             ylim(app.UIAxes, [(-1.5)*maxVoltage, 1.5*maxVoltage])
             ylabel(app.UIAxes, 'Voltage (kV)');
-
-            %             yyaxis(app.UIAxes, 'right');
-            %             plot(app.UIAxes, fullSignal(:, 1), fullSignal(:, 4)*kV);
-            %             ylim(app.UIAxes, [(-1.5)*maxVoltage, 1.5*maxVoltage])
-            %             ylabel(app.UIAxes, 'Sync');
-
             grid(app.UIAxes, 'on')
 
 
@@ -518,14 +552,14 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function storeData(app, ~, ~)
             % This function is called every n = scansAvailableFcnCount data
             % points read by the DAQ
-            global d voltageArr1 currentArr1 voltageArr2 currentArr2 voltageArr3 currentArr3 voltageArr4 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex
+            global d timeArr voltageArr1 currentArr1 voltageArr2 currentArr2 voltageArr3 currentArr3 voltageArr4 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex
 
             numScansAvailable = d.NumScansAvailable;
             if numScansAvailable == 0
-                disp('finish')
                 return;
             end
             scanCount = scanCount + 1;
+
 
             startIndex = (scanCount - 1)*d.ScansAvailableFcnCount + 1;
             % location to put next data
@@ -569,38 +603,49 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             currentArr4(startIndex: endIndex) = current4;
             % channel 8 is current input from Trek 4 (in volts)
 
-            angle1 = scanData(:, 9);
-            angleArr1(startIndex: endIndex) = angle1;
-            % channel 16 is encoder angle 1 (in volts)
+            if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
 
-            angle2 = scanData(:, 10);
-            angleArr2(startIndex: endIndex) = angle2;
-            % channel 17 is encoder angle 2 (in volts)
+                angle1 = scanData(:, 9);
+                angleArr1(startIndex: endIndex) = angle1;
+                % channel 16 is encoder angle 1 (in volts)
 
-            fp1 = scanData(:, 11);
-            fpArr1(startIndex: endIndex) = fp1;
-            % channel 20 is force plate X (in volts)
+                angle2 = scanData(:, 10);
+                angleArr2(startIndex: endIndex) = angle2;
+                % channel 17 is encoder angle 2 (in volts)
 
-            fp2 = scanData(:, 12);
-            fpArr2(startIndex: endIndex) = fp2;
-            % channel 21 is force plate Y (in volts)
+                fp1 = scanData(:, 11);
+                fpArr1(startIndex: endIndex) = fp1;
+                % channel 20 is force plate X (in volts)
 
-            fp3 = scanData(:, 13);
-            fpArr3(startIndex: endIndex) = fp3;
-            % channel 22 is force plate Z (in volts)
+                fp2 = scanData(:, 12);
+                fpArr2(startIndex: endIndex) = fp2;
+                % channel 21 is force plate Y (in volts)
+
+                fp3 = scanData(:, 13);
+                fpArr3(startIndex: endIndex) = fp3;
+                % channel 22 is force plate Z (in volts)
+
+            end
 
 
+            % stop the sequential plot when it is heavy to process
+            %             % Plot data every
+            %             app.UIAxes.Visible = 0;
+            %             cla(app.UIAxes, "reset");
+            %             hold(app.UIAxes, "on");
+            %             title(app.UIAxes, 'sequential plot')
+            %             yyaxis(app.UIAxes, 'left');
+            %             plot(app.UIAxes, timeArr(startIndex: endIndex), voltageArr1(startIndex: endIndex), '-');
+            %             ylabel(app.UIAxes, 'voltage')
+            %
+            %             yyaxis(app.UIAxes, 'right');
+            %             plot(app.UIAxes, timeArr(startIndex: endIndex), currentArr1(startIndex: endIndex), '-');
+            %             ylabel(app.UIAxes, 'current')
+            % %             ylim(app.UIAxes(1), 'auto')
+            % %             ylim(app.UIAxes(2), 'auto')
+            %             grid(app.UIAxes, "on")
+            %             app.UIAxes.Visible = 1;
 
-            % Plot data every cycle
-            x = linspace(cast(startIndex, 'double'), cast(endIndex, 'double'), length(force));
-            yyaxis(app.UIAxes, 'left');
-            plot(app.UIAxes, x, voltage1, '-');
-            ylabel(app.UIAxes, 'Hip angle')
-            yyaxis(app.UIAxes, 'right');
-            plot(app.UIAxes, x, current1, '-');
-            ylabel(app.UIAxes, 'Knee angle')
-            ylim(app.UIAxes(1), 'auto')
-            ylim(app.UIAxes(2), 'auto')
 
             %             trip = scanData(end, 4);
             %             % channel 4 is limit/trip status
@@ -609,8 +654,106 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             %                 app.GoButton.Value = 0;
             %                 GoButtonValueChanged(app);
             %             end
+
+
+            if endIndex == length(timeArr)
+                stop_currentSense(app);
+                disp('successfully end')
+            end
+        end
+
+        function start_DAQ(app, fullSignal)
+            global d timeArr voltageArr1 currentArr1 voltageArr2 currentArr2 voltageArr3 currentArr3 voltageArr4 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex
+
+            % Check for valid filenames
+            if app.ProcessedfilenameEditField == ""
+                uiwait(msgbox("Empty filename", "Error", 'modal'));
+                app.GoButton.Value = 0;
+                buildPreview(app);
+                return
+            elseif app.SaverawfileCheckBox.Value && app.RawfileprefixEditField == ""
+                uiwait(msgbox("Empty filename", "Error", 'modal'));
+                app.GoButton.Value = 0;
+                buildPreview(app);
+                return
+            end
+
+
+            % Check for valid filenames
+            if app.SaverawfileCheckBox.Value && app.RawfileprefixEditField.Value == ""
+                uiwait(msgbox("Empty filename", "Error", 'modal'));
+                app.GoButton.Value = 0;
+                return
+            elseif app.ProcessedfilenameEditField.Value == ""
+                uiwait(msgbox("Empty filename", "Error", 'modal'));
+                app.GoButton.Value = 0;
+                return
+            end
+
+            app.GoButton.Text = "Stop (active)";
+            app.GoButton.BackgroundColor = 'red';
+            if app.MonitorlimittripstatusCheckBox.Value
+                app.Lamp.Color = 'green';
+            end
+
+            % connect to Arduino
+            %                 devArduino = serialport(app.USBportDropDown, int(str2num(app.baudrateDropDown)));
+
+
+
+            % Build output signal and preload
+            timeArr = fullSignal(:, 1);
+            voltageArr1 = zeros(length(fullSignal), 1);
+            currentArr1 = zeros(length(fullSignal), 1);
+            voltageArr2 = zeros(length(fullSignal), 1);
+            currentArr2 = zeros(length(fullSignal), 1);
+            voltageArr3 = zeros(length(fullSignal), 1);
+            currentArr3 = zeros(length(fullSignal), 1);
+            voltageArr4 = zeros(length(fullSignal), 1);
+            currentArr4 = zeros(length(fullSignal), 1);
+            angleArr1 = zeros(length(fullSignal), 1);
+            angleArr2 = zeros(length(fullSignal), 1);
+            fpArr1 = zeros(length(fullSignal), 1);
+            fpArr2 = zeros(length(fullSignal), 1);
+            fpArr3 = zeros(length(fullSignal), 1);
+
+            scanCount = 0;
+            if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
+                preload(d, fullSignal(:, 3:6));
+            else
+                preload(d, fullSignal(:, 3:4));
+            end
+            %                 while 1 % wait for trigger
+            %                     tmp = read(d, "OutputFormat","Matrix");
+            %                     if tmp(:, 5) > 4 % 5V trigger
+            %                         break
+            %                     end
+            %                 end
+
+            start(d);
+            start_currentSense(app);
+
+        end
+
+        function stop_DAQ(app)
+            global d timeArr voltageArr1 currentArr1 voltageArr2 currentArr2 voltageArr3 currentArr3 voltageArr4 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex
+            % End test
+
+            % Stop the DAQ
+            if d.Running
+                stop(d);
+            end
+
+            % stop the currentSense
+            %                 currentSense_stop(app);
+
+            % Read residual data from DAQ
+            if d.NumScansAvailable > 0
+                storeData(app, d, 0);
+            end
         end
     end
+
 
 
     % Callbacks that handle component events
@@ -621,7 +764,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             %% DAQ
             DQL = daqlist; % get connected device list
             %             DevName = DQL.DeviceID(1); % select the first one (["Dev1", "SimDev1"] or ["SimDev1"])
-            DevName = "SimDev1";
+            DevName = "Dev3";
             % DAQ Dev1 ao0 = Voltage output to Trek
             % DAQ Dev1 ao1 = sync signal
 
@@ -655,14 +798,14 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             d.ScansAvailableFcn = @(src, event) storeData(app, src, event);
             % call storeData fcn when scans are available
 
-            %             d.ScansAvailableFcnCount = 'auto';
-            d.ScansAvailableFcnCount = app.SamplerateEditField.Value*1;
+            d.ScansAvailableFcnCount = 'auto';
+            %             d.ScansAvailableFcnCount = app.SamplerateEditField.Value*1;
             % every 1 second
             % by default, call storeData every cycle
 
 
 
-           addoutput(d, DevName, "ao0", "Voltage");
+            addoutput(d, DevName, "ao0", "Voltage");
             % voltage output to TREk1
 
             addoutput(d, DevName, "ao1", "Voltage");
@@ -712,11 +855,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
                 addinput(d, DevName, "ai21", "Voltage");
                 % force plate Y
-                
+
                 addinput(d, DevName, "ai22", "Voltage");
                 % force plate Z
 
-            
+
             end
 
             d.Channels
@@ -730,13 +873,16 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.timerPlotHandle = timer('TimerFcn', {@app.timerPlotCallback}, 'ExecutionMode', 'FixedRate', 'Period', .3,'StartDelay',0.5);
             app.timerPSDHandle = timer('TimerFcn', {@app.timerPSDCallback}, 'ExecutionMode', 'FixedRate', 'Period', 5,'StartDelay',15);
 
-%             app.UIAxesPSD.Visible = 'off';
+            %             app.UIAxesPSD.Visible = 'off';
             app.GridLayout2.ColumnWidth = [{'1x'},0];
 
 
             SERIAL_PORT = 'COM11';       % change to device port
             BAUD_RATE =  11520;
             app.CurrentSenseDongle = serialport(SERIAL_PORT, BAUD_RATE);
+            %             pause(1);
+
+            %             currentSense_stop(app);
 
 
         end
@@ -754,111 +900,28 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         % Value changed function: GoButton
         function GoButtonValueChanged(app, event)
-            global d voltageArr1 voltageArr2 voltageArr3 voltageArr4 currentArr1 currentArr2 currentArr3 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex kV kF kL
+            global d timeArr voltageArr1 voltageArr2 voltageArr3 voltageArr4 currentArr1 currentArr2 currentArr3 currentArr4 angleArr1 angleArr2 fpArr1 fpArr2 fpArr3 scanCount lastDataIndex kV kF kL
 
 
             fullSignal = buildSignal(app);
 
-            if app.GoButton.Value
-
-                % Check for valid filenames
-                if app.ProcessedfilenameEditField == ""
-                    uiwait(msgbox("Empty filename", "Error", 'modal'));
-                    app.GoButton.Value = 0;
-                    buildPreview(app);
-                    return
-                elseif app.SaverawfileCheckBox.Value && app.RawfileprefixEditField == ""
-                    uiwait(msgbox("Empty filename", "Error", 'modal'));
-                    app.GoButton.Value = 0;
-                    buildPreview(app);
-                    return
-                end
-
-                %                 app.UIAxes.YAxis(2).Visible = 'on';
-                %                 xlabel(app.UIAxes, 'Sample Number');
-                %                 yyaxis(app.UIAxes, 'right');
-                %                 %                 xlim(app.UIAxes, 'auto')
-                %                 %                 ylim(app.UIAxes, 'auto');
-                %                 ylabel(app.UIAxes, 'Force (N)');
-                %                 yyaxis(app.UIAxes, 'left');
-                %                 %                 ylim(app.UIAxes, 'auto')
-                %                 ylabel(app.UIAxes, 'Displacement (mm)');
-
-                % Check for valid filenames
-                if app.SaverawfileCheckBox.Value && app.RawfileprefixEditField.Value == ""
-                    uiwait(msgbox("Empty filename", "Error", 'modal'));
-                    app.GoButton.Value = 0;
-                    return
-                elseif app.ProcessedfilenameEditField.Value == ""
-                    uiwait(msgbox("Empty filename", "Error", 'modal'));
-                    app.GoButton.Value = 0;
-                    return
-                end
-
-                app.GoButton.Text = "Stop (active)";
-                app.GoButton.BackgroundColor = 'red';
-                if app.MonitorlimittripstatusCheckBox.Value
-                    app.Lamp.Color = 'green';
-                end
-
-                % connect to Arduino
-                %                 devArduino = serialport(app.USBportDropDown, int(str2num(app.baudrateDropDown)));
-
-
-
-                % Build output signal and preload
-                voltageArr1 = zeros(length(fullSignal), 1);
-                currentArr1 = zeros(length(fullSignal), 1);
-                voltageArr2 = zeros(length(fullSignal), 1);
-                currentArr2 = zeros(length(fullSignal), 1);
-                voltageArr3 = zeros(length(fullSignal), 1);
-                currentArr3 = zeros(length(fullSignal), 1);
-                voltageArr4 = zeros(length(fullSignal), 1);
-                currentArr4 = zeros(length(fullSignal), 1);
-                angleArr1 = zeros(length(fullSignal), 1);
-                angleArr2 = zeros(length(fullSignal), 1);
-                fpArr1 = zeros(length(fullSignal), 1);
-                fpArr2 = zeros(length(fullSignal), 1);
-                fpArr3 = zeros(length(fullSignal), 1);
-
-                scanCount = 0;
-                if app.DAQButtonGroup.SelectedObject.Text == '4 outputs'
-                    preload(d, fullSignal(:, 3:6));
-                else
-                    preload(d, fullSignal(:, 3:4));
-                end
-                %                 while 1 % wait for trigger
-                %                     tmp = read(d, "OutputFormat","Matrix");
-                %                     if tmp(:, 5) > 4 % 5V trigger
-                %                         break
-                %                     end
-                %                 end
-
-                start(d);
-
+            if app.GoButton.Value % start test
+                start_DAQ(app, fullSignal);
             else
-                % End test
-
-                % Stop the DAQ
-                if d.Running
-                    stop(d);
-                end
-
-                % Read residual data from DAQ
-                if d.NumScansAvailable > 0
-                    storeData(app, d, 0);
-                end
+                stop_DAQ(app);
 
 
 
                 cla(app.UIAxes, "reset")
+                title(app.UIAxes, 'overall plot');
                 yyaxis(app.UIAxes, 'left');
-                plot(app.UIAxes, fullSignal(:, 1), angleArr1);
+                plot(app.UIAxes, timeArr, voltageArr1);
                 ylabel(app.UIAxes, 'voltage [kV]');
                 yyaxis(app.UIAxes, 'right');
-                plot(app.UIAxes, fullSignal(:, 1), angleArr2);
-                ylabel(app.UIAxes, 'current [?]');
-                ylabel(app.UIAxes, 'time [s]')
+                plot(app.UIAxes, timeArr, currentArr1);
+                ylabel(app.UIAxes, 'current [uA]');
+                xlabel(app.UIAxes, 'time [s]')
+                grid(app.UIAxes, "on")
 
                 % Bode plot processing
                 %                 processedCurve = generateBode(app, fullSignal(:, 4));
@@ -881,25 +944,28 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                     rawFilename = fullfile(app.SelectfilepathEditField.Value,...
                         [app.RawfileprefixEditField.Value, app.ProcessedfilenameEditField.Value, '_', textPara, datestr(now,'yyyy_mm_dd_HHMM_SS'), '.dat']);
 
+                    lastDataIndex
+
+
                     writetable(table(...
                         fullSignal(:, 1),...
                         fullSignal(:, 3),...
                         fullSignal(:, 4),...
                         fullSignal(:, 5),...
                         fullSignal(:, 6),...
-                        voltageArr1(1:lastDataIndex)*kV,...
-                        currentArr1(1:lastDataIndex)*kV,...
-                        voltageArr2(1:lastDataIndex)*kV,...
-                        currentArr2(1:lastDataIndex)*kV,...
-                        voltageArr3(1:lastDataIndex)*kV,...
-                        currentArr3(1:lastDataIndex)*kV,...
-                        voltageArr4(1:lastDataIndex)*kV,...
-                        currentArr4(1:lastDataIndex)*kV,...
-                        angleArr1(1: lastDataIndex),...
-                        angleArr2(1: lastDataIndex),...
-                        fpArr1(1: lastDataIndex),...
-                        fpArr2(1: lastDataIndex),...
-                        fpArr3(1: lastDataIndex),...
+                        voltageArr1*kV,...
+                        currentArr1*kV,...
+                        voltageArr2*kV,...
+                        currentArr2*kV,...
+                        voltageArr3*kV,...
+                        currentArr3*kV,...
+                        voltageArr4*kV,...
+                        currentArr4*kV,...
+                        angleArr1,...
+                        angleArr2,...
+                        fpArr1,...
+                        fpArr2,...
+                        fpArr3,...
                         'VariableNames', {...
                         'Time [s]',...
                         'Voltage ref 1[kV]',...
@@ -1132,22 +1198,22 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         % Value changed function: dutyratio2EditField
         function dutyratio2EditFieldValueChanged(app, event)
-            buildPreview(app);            
+            buildPreview(app);
         end
 
         % Value changed function: dutyratio3EditField
         function dutyratio3EditFieldValueChanged(app, event)
-            buildPreview(app);            
+            buildPreview(app);
         end
 
         % Value changed function: dutyratio4EditField
         function dutyratio4EditFieldValueChanged(app, event)
-            buildPreview(app);            
+            buildPreview(app);
         end
 
         % Value changed function: rampspeed2EditField
         function rampspeed2EditFieldValueChanged(app, event)
-            buildPreview(app);            
+            buildPreview(app);
         end
 
         % Value changed function: rampspeed3EditField
@@ -1157,71 +1223,27 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
         % Value changed function: rampspeed4EditField
         function rampspeed4EditFieldValueChanged(app, event)
-            buildPreview(app);            
+            buildPreview(app);
         end
 
         % Value changed function: delayCheckBox
         function delayCheckBoxValueChanged(app, event)
-            buildPreview(app);                        
+            buildPreview(app);
         end
 
         % Callback function
         function expoEditFieldValueChanging(app, event)
-            buildPreview(app);                                    
+            buildPreview(app);
         end
 
         % Value changed function: expoEditField
         function expoEditFieldValueChanged(app, event)
-            buildPreview(app);                                                
+            buildPreview(app);
         end
 
-        % Value changed function: CurrentSenseSwitch
+        % Callback function
         function CurrentSenseSwitchValueChanged(app, event)
-            value = app.CurrentSenseSwitch.Value;
-            if strcmp(value,'On')
-                app.recording = true;
-                app.CurrentSenseDongle.flush()
-                app.CurrentSenseDongle.write(uint8(1),'uint8');
-                app.CurrentSenseDongle.write(uint8(1),'uint8');
-                app.CurrentSenseDongle.write(uint8(1),'uint8');
-                app.CurrentSenseDongle.write(uint8(1),'uint8');
 
-                app.data = [];
-                app.loss = [];
-                app.packet_received = 0;
-                app.packet_ind = [];
-%                 app.Label_Loss.Text = "";
-%                 app.Lamp.Color = 'green';
-                app.first_meas = true;
-                start(app.timerStreamHandle);
-                start(app.timerPlotHandle);
-                %start(app.timerPSDHandle);
-
-
-
-            else
-                app.recording = false;
-                app.CurrentSenseDongle.write(uint8(2),'uint8');
-                app.CurrentSenseDongle.write(uint8(2),'uint8');
-                app.CurrentSenseDongle.write(uint8(2),'uint8');
-                app.CurrentSenseDongle.write(uint8(2),'uint8');
-                app.CurrentSenseDongle.write(uint8(2),'uint8');
-
-                mac_names = dec2hex(app.sensor_mac_map(2,:));
-                datastruct = cell2struct(app.data,mac_names,2);
-                packetstruct = cell2struct(app.packet_ind,mac_names,2);
-            
-            assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'data'], (datastruct));
-            assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'packets'], (packetstruct));
-            app.data = [];
-            app.loss = [];
-            app.packet_ind = [];
-            stop(app.timerStreamHandle);
-            stop(app.timerPlotHandle);
-            stop(app.timerPSDHandle);
-            app.CurrentSenseDongle.flush();
-            app.Lamp.Color= 'red';
-            end
         end
     end
 
@@ -2229,7 +2251,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.SelectfilepathEditField = uieditfield(app.GridLayout8, 'text');
             app.SelectfilepathEditField.Layout.Row = 2;
             app.SelectfilepathEditField.Layout.Column = 2;
-            app.SelectfilepathEditField.Value = '\\space\fukushima\RM\prj_legETH\experiments\20230427_selfSensing';
+            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator';
 
             % Create GoButton
             app.GoButton = uibutton(app.GridLayout8, 'state');
@@ -2270,17 +2292,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.expoEditField.ValueChangedFcn = createCallbackFcn(app, @expoEditFieldValueChanged, true);
             app.expoEditField.Position = [631 69 100 22];
             app.expoEditField.Value = 4;
-
-            % Create CurrentSenseSwitchLabel
-            app.CurrentSenseSwitchLabel = uilabel(app.UIFigure);
-            app.CurrentSenseSwitchLabel.HorizontalAlignment = 'center';
-            app.CurrentSenseSwitchLabel.Position = [290 30 80 22];
-            app.CurrentSenseSwitchLabel.Text = 'CurrentSense';
-
-            % Create CurrentSenseSwitch
-            app.CurrentSenseSwitch = uiswitch(app.UIFigure, 'slider');
-            app.CurrentSenseSwitch.ValueChangedFcn = createCallbackFcn(app, @CurrentSenseSwitchValueChanged, true);
-            app.CurrentSenseSwitch.Position = [306 67 45 20];
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
