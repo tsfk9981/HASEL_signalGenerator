@@ -210,8 +210,8 @@ classdef CurrentSense_exported < matlab.apps.AppBase
             app.timerPlotHandle = timer('TimerFcn', {@app.timerPlotCallback}, 'ExecutionMode', 'FixedRate', 'Period', .3,'StartDelay',0.5);
             app.timerPSDHandle = timer('TimerFcn', {@app.timerPSDCallback}, 'ExecutionMode', 'FixedRate', 'Period', 5,'StartDelay',15);
 
-            app.UIAxesPSD.Visible = 'off';
-            app.GridLayout2.ColumnWidth = [{'1x'},0];
+            app.UIAxesPSD.Visible = 'on';
+           % app.GridLayout2.ColumnWidth = [{'1x'},0];
 
 
             SERIAL_PORT = 'COM11';       % change to device port
@@ -241,7 +241,7 @@ classdef CurrentSense_exported < matlab.apps.AppBase
                 app.first_meas = true;
                 start(app.timerStreamHandle);
                 start(app.timerPlotHandle);
-                %start(app.timerPSDHandle);
+                start(app.timerPSDHandle);
 
 
 
