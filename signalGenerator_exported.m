@@ -3,6 +3,8 @@ classdef signalGenerator_exported < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
+        txPwEditField                   matlab.ui.control.NumericEditField
+        txPwEditFieldLabel              matlab.ui.control.Label
         expoEditField                   matlab.ui.control.NumericEditField
         expoEditField_2Label            matlab.ui.control.Label
         DAQButtonGroup                  matlab.ui.container.ButtonGroup
@@ -897,9 +899,9 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         end
 
         function setup_DAQ(app)
-%             DQL = daqlist; % get connected device list
-            %             DevName = DQL.DeviceID(1); % select the first one (["Dev1", "SimDev1"] or ["SimDev1"])
-            DevName = "Dev3";
+            DQL = daqlist; % get connected device list
+            DevName = DQL.DeviceID(1); % select the first one (["Dev1", "SimDev1"] or ["SimDev1"])
+            % DevName = "Dev3";
 
             if app.DAQButtonGroup.SelectedObject.Text == "4 outputs"
                 app.type_DAQ = 4;
@@ -1047,7 +1049,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.GridLayout2.ColumnWidth = [{'1x'},0];
 
 
-            SERIAL_PORT = 'COM11';       % change to device port
+            SERIAL_PORT = 'COM4';       % change to device port
             BAUD_RATE =  11520;
             app.CurrentSenseDongle = serialport(SERIAL_PORT, BAUD_RATE);
 
@@ -1311,6 +1313,12 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         function CurrentSenseSwitchValueChanged(app, event)
 
         end
+
+        % Value changed function: txPwEditField
+        function txPwEditFieldValueChanged(app, event)
+            value = app.txPwEditField.Value;
+            app.CurrentSenseDongle.write(value,'uint8');
+        end
     end
 
     % Component initialization
@@ -1330,6 +1338,9 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             xlabel(app.UIAxes, 'Time (s)')
             ylabel(app.UIAxes, 'Voltage (kV)')
             app.UIAxes.PlotBoxAspectRatio = [1.45226130653266 1 1];
+            app.UIAxes.XTickLabelRotation = 0;
+            app.UIAxes.YTickLabelRotation = 0;
+            app.UIAxes.ZTickLabelRotation = 0;
             app.UIAxes.Position = [24 483 1099 270];
 
             % Create SetupPanel_2
@@ -1688,7 +1699,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.TotaltimeEditField.ValueChangedFcn = createCallbackFcn(app, @TotaltimeEditFieldValueChanged, true);
             app.TotaltimeEditField.Layout.Row = 1;
             app.TotaltimeEditField.Layout.Column = 2;
-            app.TotaltimeEditField.Value = 4;
+            app.TotaltimeEditField.Value = 10;
 
             % Create frequencyEditFieldLabel
             app.frequencyEditFieldLabel = uilabel(app.GridLayout7);
@@ -1703,7 +1714,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.frequencyEditField.ValueChangedFcn = createCallbackFcn(app, @frequencyEditFieldValueChanged, true);
             app.frequencyEditField.Layout.Row = 2;
             app.frequencyEditField.Layout.Column = 2;
-            app.frequencyEditField.Value = 2;
+            app.frequencyEditField.Value = 1;
 
             % Create CalibrationPanel
             app.CalibrationPanel = uipanel(app.UIFigure);
@@ -2297,7 +2308,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.ProcessedfilenameEditField = uieditfield(app.GridLayout8, 'text');
             app.ProcessedfilenameEditField.Layout.Row = 3;
             app.ProcessedfilenameEditField.Layout.Column = 2;
-            app.ProcessedfilenameEditField.Value = 'SS';
+            app.ProcessedfilenameEditField.Value = 'NST';
 
             % Create BrowseButton
             app.BrowseButton = uibutton(app.GridLayout8, 'push');
@@ -2317,7 +2328,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.SelectfilepathEditField = uieditfield(app.GridLayout8, 'text');
             app.SelectfilepathEditField.Layout.Row = 2;
             app.SelectfilepathEditField.Layout.Column = 2;
-            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator';
+            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Documents\GitHub\HASEL_signalGenerator';
 
             % Create GoButton
             app.GoButton = uibutton(app.GridLayout8, 'state');
@@ -2357,7 +2368,19 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.expoEditField = uieditfield(app.UIFigure, 'numeric');
             app.expoEditField.ValueChangedFcn = createCallbackFcn(app, @expoEditFieldValueChanged, true);
             app.expoEditField.Position = [631 69 100 22];
-            app.expoEditField.Value = 4;
+            app.expoEditField.Value = 2;
+
+            % Create txPwEditFieldLabel
+            app.txPwEditFieldLabel = uilabel(app.UIFigure);
+            app.txPwEditFieldLabel.HorizontalAlignment = 'right';
+            app.txPwEditFieldLabel.Position = [585 41 31 22];
+            app.txPwEditFieldLabel.Text = 'txPw';
+
+            % Create txPwEditField
+            app.txPwEditField = uieditfield(app.UIFigure, 'numeric');
+            app.txPwEditField.ValueChangedFcn = createCallbackFcn(app, @txPwEditFieldValueChanged, true);
+            app.txPwEditField.Position = [631 41 101 22];
+            app.txPwEditField.Value = 80;
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';

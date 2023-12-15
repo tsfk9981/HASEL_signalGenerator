@@ -2,18 +2,20 @@ classdef CurrentSense_exported < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        UIFigure       matlab.ui.Figure
-        GridLayout     matlab.ui.container.GridLayout
-        LeftPanel      matlab.ui.container.Panel
-        Label_Loss     matlab.ui.control.Label
-        WindowSlider   matlab.ui.control.Slider
-        Label          matlab.ui.control.Label
-        RecordSwitch   matlab.ui.control.ToggleSwitch
-        Lamp           matlab.ui.control.Lamp
-        RightPanel     matlab.ui.container.Panel
-        GridLayout2    matlab.ui.container.GridLayout
-        UIAxesPSD      matlab.ui.control.UIAxes
-        UIAxesCurrent  matlab.ui.control.UIAxes
+        UIFigure            matlab.ui.Figure
+        GridLayout          matlab.ui.container.GridLayout
+        LeftPanel           matlab.ui.container.Panel
+        txPwEditField       matlab.ui.control.NumericEditField
+        txPwEditFieldLabel  matlab.ui.control.Label
+        Label_Loss          matlab.ui.control.Label
+        WindowSlider        matlab.ui.control.Slider
+        Label               matlab.ui.control.Label
+        RecordSwitch        matlab.ui.control.ToggleSwitch
+        Lamp                matlab.ui.control.Lamp
+        RightPanel          matlab.ui.container.Panel
+        GridLayout2         matlab.ui.container.GridLayout
+        UIAxesPSD           matlab.ui.control.UIAxes
+        UIAxesCurrent       matlab.ui.control.UIAxes
     end
 
     % Properties that correspond to apps with auto-reflow
@@ -277,6 +279,18 @@ classdef CurrentSense_exported < matlab.apps.AppBase
             app.Label.Text = num2str(value);
         end
 
+        % Callback function: not associated with a component
+        function txPwEditField_2ValueChanged(app, event)
+            value = app.txPwEditField_2.Value;
+            app.CurrentSenseDongle.write(value,'uint8');
+        end
+
+        % Value changed function: txPwEditField
+        function txPwEditFieldValueChanged(app, event)
+            value = app.txPwEditField.Value;
+            app.CurrentSenseDongle.write(value,'uint8');
+        end
+
         % Changes arrangement of the app based on UIFigure width
         function updateAppLayout(app, event)
             currentFigureWidth = app.UIFigure.Position(3);
@@ -354,6 +368,17 @@ classdef CurrentSense_exported < matlab.apps.AppBase
             app.Label_Loss.FontColor = [1 0 0];
             app.Label_Loss.Position = [7 11 149 22];
             app.Label_Loss.Text = '';
+
+            % Create txPwEditFieldLabel
+            app.txPwEditFieldLabel = uilabel(app.LeftPanel);
+            app.txPwEditFieldLabel.HorizontalAlignment = 'right';
+            app.txPwEditFieldLabel.Position = [20 269 31 22];
+            app.txPwEditFieldLabel.Text = 'txPw';
+
+            % Create txPwEditField
+            app.txPwEditField = uieditfield(app.LeftPanel, 'numeric');
+            app.txPwEditField.ValueChangedFcn = createCallbackFcn(app, @txPwEditFieldValueChanged, true);
+            app.txPwEditField.Position = [65 269 91 22];
 
             % Create RightPanel
             app.RightPanel = uipanel(app.GridLayout);
