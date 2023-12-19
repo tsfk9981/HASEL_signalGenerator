@@ -595,7 +595,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             plot(app.UIAxes, app.fullSignal(:, 1), app.fullSignal(:, 4)*app.kV);
             plot(app.UIAxes, app.fullSignal(:, 1), app.fullSignal(:, 5)*app.kV);
             plot(app.UIAxes, app.fullSignal(:, 1), app.fullSignal(:, 6)*app.kV);
-            ylim(app.UIAxes, [(-1.5)*maxVoltage, 1.5*maxVoltage])
+            ylim(app.UIAxes, [(-1.5)*max([1, maxVoltage]), 1.5*max([1, maxVoltage])])
             ylabel(app.UIAxes, 'Voltage (kV)');
             grid(app.UIAxes, 'on')
 
@@ -1684,7 +1684,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.MaxvoltageEditField.ValueChangedFcn = createCallbackFcn(app, @MaxvoltageEditFieldValueChanged, true);
             app.MaxvoltageEditField.Layout.Row = 3;
             app.MaxvoltageEditField.Layout.Column = 2;
-            app.MaxvoltageEditField.Value = 3;
 
             % Create TotaltimeEditFieldLabel
             app.TotaltimeEditFieldLabel = uilabel(app.GridLayout7);
@@ -1699,7 +1698,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.TotaltimeEditField.ValueChangedFcn = createCallbackFcn(app, @TotaltimeEditFieldValueChanged, true);
             app.TotaltimeEditField.Layout.Row = 1;
             app.TotaltimeEditField.Layout.Column = 2;
-            app.TotaltimeEditField.Value = 10;
+            app.TotaltimeEditField.Value = 120;
 
             % Create frequencyEditFieldLabel
             app.frequencyEditFieldLabel = uilabel(app.GridLayout7);
@@ -2308,7 +2307,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.ProcessedfilenameEditField = uieditfield(app.GridLayout8, 'text');
             app.ProcessedfilenameEditField.Layout.Row = 3;
             app.ProcessedfilenameEditField.Layout.Column = 2;
-            app.ProcessedfilenameEditField.Value = 'NST';
+            app.ProcessedfilenameEditField.Value = 'OST';
 
             % Create BrowseButton
             app.BrowseButton = uibutton(app.GridLayout8, 'push');
@@ -2328,7 +2327,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.SelectfilepathEditField = uieditfield(app.GridLayout8, 'text');
             app.SelectfilepathEditField.Layout.Row = 2;
             app.SelectfilepathEditField.Layout.Column = 2;
-            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Documents\GitHub\HASEL_signalGenerator';
+            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Documents\GitHub\20231219_offsetTest';
 
             % Create GoButton
             app.GoButton = uibutton(app.GridLayout8, 'state');
