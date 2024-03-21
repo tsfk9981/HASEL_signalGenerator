@@ -175,260 +175,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         rawFilename;
     end
     
-    %% currentSense
-    properties (Access = public)
-        Data_Tag = uint8(['DATA']);%uint8([0xA0, 0x76, 0x4E, 0x41, 0xE6, 0x70]); %uint8([0xA0, 0x76, 0x4E, 0x41, 0xBD, 0xDC]);%  Description
-        CurrentSenseDongle;
-        CurrentSense_recording = false;
-        timerStreamHandle;
-        % timerPlotHandle
-        % timerPSDHandle
-        stream = [];
-
-        data = uint16([]);
-        packetdataLength = 250-2;
-        packetmessageLength = 260;
-        sensor_mac_map; % this is used to map mac adresses to sensor indexes
-
-        first_meas = false;
-
-        FS = 8000;
-        TS;
-
-        Vref = 3;
-        G = 11;
-        R = 2e3;
-        Bias = 3/2;
-        ADCBits = 2^16-1;
-        %             Uadc = (raw.*(Vref/ADCBits))-Bias;
-        %             Uin = Uadc./G;
-        %             current = Uin/R;
-        conversionFactorADC = (3/(2^16-1));
-        conversionFactorIn = 1/(11*2e3);
-        packet_ind = [];
-        loss = 0;
-        packet_received = 0;
-
-    end
-
-    methods (Access = private)
-        function current = toAmps(app, raw)
-            current = ((raw*app.conversionFactorADC)-app.Bias)*app.conversionFactorIn;
-        end
-        function current = toMicroAmps(app, raw)
-            current = app.toAmps(raw) * 1e6;
-        end
-
-
-
-        % function timerPSDCallback(app, obj, event)
-        %     for i = 1 : size(app.sensor_mac_map,2)
-        %         window = floor(8* app.WindowSlider.Value);
-        %         len = length(app.data{i});
-        % 
-        %         if(len > window)
-        %             plotData = app.toAmps(double(app.data{i}(len-window+1 : len)));
-        %             Nfft = floor(window/10);% 1024;app.WindowSlider.Value;
-        %             [pxx,f] = pwelch(plotData./(50e-6),gausswin(Nfft),Nfft/2,Nfft,app.FS);
-        %             %  [pxx,f] = pwelch(plotData);
-        % 
-        %             plot(app.UIAxesPSD, f,10*log10(pxx));
-        %             xlim(app.UIAxesPSD,[0,app.FS/2]);
-        %             % PSD = mean(10*log10(pxx));
-        %             % txt = num2str(PSD);
-        %             % text(app.UIAxesPSD, app.FS/4,PSD, txt ,'FontSize',14)
-        % 
-        %             [pks,locs, peakwidth, peakProminence] =findpeaks(10*log10(pxx),f);
-        %             peaks_prominence = find(peakProminence>5);% &peakwidth>10);
-        %             text(app.UIAxesPSD,locs(peaks_prominence)-5,pks(peaks_prominence)+.2,[num2str(round(locs(peaks_prominence)))])
-        % 
-        %         end
-        %     end
-        %     app.Label_Loss.Text = ['Loss ' num2str((length(app.loss)/double(app.packet_received + length(app.loss)))*100) '%'];
-        % end
-        % 
-        % function timerPlotCallback(app, obj, event)
-        %     for i = 1 : size(app.sensor_mac_map,2)
-        %         window = round((app.FS * 1e-3) * app.WindowSlider.Value);
-        %         t = 0:app.TS:(window-1)/app.FS;
-        %         len = length(app.data{i});
-        %         if(len > window)
-        %             plotData = app.toMicroAmps(app.data{i}(len-window+1 : len));
-        %             plot(app.UIAxesCurrent,t,plotData,'DisplayName',dec2hex(app.sensor_mac_map(2,i)) );
-        % 
-        %             hold(app.UIAxesCurrent,'on');
-        % 
-        %         end
-        %     end
-        %     hold(app.UIAxesCurrent,'off');
-        %     legend(app.UIAxesCurrent);
-        %     %update Loss
-        % 
-        % 
-        % end
-        % 
-        function timerStreamCallback(app, obj, event)
-            if(app.CurrentSenseDongle.NumBytesAvailable>=260)
-
-                app.stream = [app.stream,uint8(app.CurrentSenseDongle.read(app.CurrentSenseDongle.NumBytesAvailable,'uint8'))];
-
-
-                extractData(app, app.stream);
-
-
-            end
-        end
-
-        %extracts data and removes it from the stream
-        function [out] = extractData(app, stream)
-            index = strfind(stream,app.Data_Tag);
-            if(index)
-                out=uint16(NaN(floor(length(stream)/2),4));%max size
-
-                index_of_first_packet(1:4) = 2^16; % max uint16 packet counter value, this is a hacky solution but should should support up to 4 devices
-
-
-                if((index(end)+app.packetmessageLength-1)>length(stream)) % check last received packet is complete
-                    index(end) = []; % remove last index because package is not complete
-                end
-
-                app.stream(1:index(end)+app.packetmessageLength-1) = []; % delete all data that has been read
-
-                for ind = 1 : length(index)
-                    %                 len = uint32(typecast(uint8([stream(index(i)+6),stream(index(i)+7)]),'uint16'));
-                    %                 disp(length(stream));
-                    %                 ende = index(i)+5+len*2;
-                    %                 ende = index(i)+5+len*2;
-
-
-                    mac = swapbytes((typecast([0,0,stream(index(ind)+4:index(ind)+9)],'uint64'))); % add zeroes to make 64bit value and convert
-
-
-                    [~,mac_index] = find(app.sensor_mac_map == mac); % row 1 = indexes; row 2 = mac-value
-                    if(mac_index)
-                    else % mac has not been used yet
-                        len_mac_map = size(app.sensor_mac_map,2)+1;
-                        app.sensor_mac_map(1,len_mac_map) = len_mac_map;
-                        app.sensor_mac_map(2,len_mac_map) = mac;
-                        mac_index = len_mac_map;
-                        % app.sensor_mac_map
-                    end
-
-                    app.packet_received = app.packet_received+1;
-
-
-                    this_ind = (typecast(stream(index(ind)+10:index(ind)+11),'uint16')); % get packet count index
-
-
-
-                    if(this_ind < index_of_first_packet(mac_index)) % this is the first packet of this stream;
-                        index_of_first_packet(mac_index) = this_ind;
-                    end
-                    ind_start(mac_index) = ((this_ind-index_of_first_packet(mac_index))*(app.packetdataLength)/2)+1;     %((ind-1) * (app.packetLength/2) +1);
-                    ind_ende(mac_index) = floor(ind_start(mac_index) + ((app.packetdataLength)/2)-1);
-                    out(mac_index,ind_start(mac_index):ind_ende(mac_index)) = double(typecast(stream(index(ind)+12:index(ind)+12+app.packetdataLength-1),'uint16'));
-
-
-
-                    app.packet_ind{mac_index}(this_ind+1) = this_ind;
-
-                    %   stream(index(ind)+6:index(ind)+5+app.packetLength-1) = NaN;
-
-                end
-                for i = 1 : size(app.sensor_mac_map,2)
-                    ind_start = index_of_first_packet(i)*(app.packetdataLength/2)+1;
-
-                    app.data{i}(ind_start:ind_start+length(out(i,1:ind_ende(i)))-1) = double(out(i,1:ind_ende(i)));
-
-
-                end
-
-                %out = double(out(1:ende)); % remove trailing unneccesary zeroes
-                %out(out==0) = NaN;
-            else
-                out = [];
-            end
-
-        end
-        function start_currentSense(app)
-            if app.CurrentSense_recording == false
-                app.CurrentSense_recording = true;
-                app.CurrentSenseDongle.flush();
-                app.CurrentSenseDongle.write(uint8(1),'uint8');
-                app.CurrentSenseDongle.write(uint8(1),'uint8');
-                app.CurrentSenseDongle.write(uint8(1),'uint8');
-                app.CurrentSenseDongle.write(uint8(1),'uint8');
-
-                app.data = [];
-                app.loss = [];
-                app.packet_received = 0;
-                app.packet_ind = [];
-                %                 app.Label_Loss.Text = "";
-                %                 app.Lamp.Color = 'green';
-                app.first_meas = true;
-                start(app.timerStreamHandle);
-                % start(app.timerPlotHandle);
-                %start(app.timerPSDHandle);
-            end
-        end
-        function stop_currentSense(app)
-            if app.CurrentSense_recording
-                app.CurrentSense_recording = false;
-                app.CurrentSenseDongle.write(uint8(2),'uint8');
-                app.CurrentSenseDongle.write(uint8(2),'uint8');
-                app.CurrentSenseDongle.write(uint8(2),'uint8');
-                app.CurrentSenseDongle.write(uint8(2),'uint8');
-                app.CurrentSenseDongle.write(uint8(2),'uint8');
-
-
-                num_device = length(app.data);
-                mac_names = dec2hex(app.sensor_mac_map(2,:));
-                % datastruct = cell2struct(app.data,mac_names,2);
-                % packetstruct = cell2struct(app.packet_ind,mac_names,2);
-
-                % assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'data'], (datastruct));
-                % assignin('base', ['CS_', datestr(now,'yyyy_mm_dd_HH_MM_SS_'),'packets'], (packetstruct));
-
-                num_packet_loss = cellfun(@(x) nnz(x == 0) - 1, app.packet_ind);
-                if sum(num_packet_loss) > 0
-                    disp(['packet loss: ' num2str(num_packet_loss)])
-                end
-
-                Data = fillWithNan(app, app.data); % make a data array and fill the data length difference with NaN
-                % Packet = fillWithNan(app, app.packet);
-
-                mac_names_cell = cell(1, num_device);
-                for i = 1: num_device
-                    mac_names_cell{i} = mac_names(i,:);
-                end
-
-                writetable(array2table(Data, 'VariableNames', mac_names_cell), [app.rawFilename, '_current.dat']);
-
-                app.data = [];
-                app.loss = [];
-                app.packet_ind = [];
-                stop(app.timerStreamHandle);
-                % stop(app.timerPlotHandle);
-                % stop(app.timerPSDHandle);
-                app.CurrentSenseDongle.flush();
-                %             app.Lamp.Color= 'red';
-            end
-
-        end
-        function Data_new = fillWithNan(app, Data)
-            dataNum = length(Data);
-            [r, c] = cellfun(@size, Data);
-            dataLengthMax = max(c);
-
-            Data_new = nan(dataLengthMax, dataNum);
-            for i = 1: dataNum
-                Data_new(1: length(Data{i}), i) = Data{i};
-            end
-        end
-
-
-    end
-
     %% DAQ
     methods (Access = private)
 
@@ -752,9 +498,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             disp('stop_DAQ: end stop DAQ')
 
 
-            % stop the currentSense
-            %                 currentSense_stop(app);
-
             % Read residual data from DAQ
             if app.d.NumScansAvailable > 0
                 disp('reading residual data from DAQ')
@@ -858,14 +601,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             setArr(app);
             start_DAQ(app);
             app.scanCount = 0;
-            start_currentSense(app);
             goButtonRecording(app);
         end
 
         function stop_measurement(app)
             setFname(app);
-            stop_currentSense(app);
-            disp('saved current')
             stop_DAQ(app);
             disp('stopped DAQ')
             goButtonSaving(app);
@@ -1049,24 +789,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             buildPreview(app);
 
             goButtonReady(app);
-
-
-
-            %% currentSense
-            app.TS = 1/app.FS;
-
-            app.timerStreamHandle = timer('TimerFcn', {@app.timerStreamCallback}, 'ExecutionMode', 'FixedRate', 'Period', 0.1,'StartDelay',.1);
-            % app.timerPlotHandle = timer('TimerFcn', {@app.timerPlotCallback}, 'ExecutionMode', 'FixedRate', 'Period', .3,'StartDelay',0.5);
-            % app.timerPSDHandle = timer('TimerFcn', {@app.timerPSDCallback}, 'ExecutionMode', 'FixedRate', 'Period', 5,'StartDelay',15);
-
-            %             app.UIAxesPSD.Visible = 'off';
-            app.GridLayout2.ColumnWidth = [{'1x'},0];
-
-
-            SERIAL_PORT = 'COM4';       % change to device port
-            BAUD_RATE =  11520;
-            app.CurrentSenseDongle = serialport(SERIAL_PORT, BAUD_RATE);
-
 
         end
 
