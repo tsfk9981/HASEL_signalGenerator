@@ -204,32 +204,26 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             end
 
 
-            stop the sequential plot when it is heavy to process
-                        % Plot data every
-                        app.UIAxes.Visible = 0;
-                        cla(app.UIAxes, "reset");
-                        hold(app.UIAxes, "on");
-                        title(app.UIAxes, 'sequential plot')
-                        yyaxis(app.UIAxes, 'left');
-                        plot(app.UIAxes, timeArr(startIndex: endIndex), voltageArr1(startIndex: endIndex), '-');
-                        ylabel(app.UIAxes, 'voltage')
+            % % stop the sequential plot when it is heavy to process
+            %             % Plot data every
+            %             app.UIAxes.Visible = 0;
+            %             cla(app.UIAxes, "reset");
+            %             hold(app.UIAxes, "on");
+            %             title(app.UIAxes, 'sequential plot')
+            %             yyaxis(app.UIAxes, 'left');
+            %             plot(app.UIAxes, timeArr(startIndex: endIndex), voltageArr1(startIndex: endIndex), '-');
+            %             ylabel(app.UIAxes, 'voltage')
+            % 
+            %             yyaxis(app.UIAxes, 'right');
+            %             plot(app.UIAxes, timeArr(startIndex: endIndex), currentArr1(startIndex: endIndex), '-');
+            %             ylabel(app.UIAxes, 'current')
+            % %             ylim(app.UIAxes(1), 'auto')
+            % %             ylim(app.UIAxes(2), 'auto')
+            %             grid(app.UIAxes, "on")
+            %             app.UIAxes.Visible = 1;
 
-                        yyaxis(app.UIAxes, 'right');
-                        plot(app.UIAxes, timeArr(startIndex: endIndex), currentArr1(startIndex: endIndex), '-');
-                        ylabel(app.UIAxes, 'current')
-            %             ylim(app.UIAxes(1), 'auto')
-            %             ylim(app.UIAxes(2), 'auto')
-                        grid(app.UIAxes, "on")
-                        app.UIAxes.Visible = 1;
 
 
-                        trip = scanData(end, 4);
-                        % channel 4 is limit/trip status
-                        if trip < 4 && app.MonitorlimittripstatusCheckBox.Value
-                            app.Lamp.Color = 'red';
-                            app.GoButton.Value = 0;
-                            GoButtonValueChanged(app);
-                        end
 
 
             if endIndex >= length(app.Arr.time)
@@ -712,22 +706,22 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             buildPreview(app);
         end
 
-        % Callback function: not associated with a component
+        % Callback function
         function delay1EditFieldValueChanged(app, event)
             buildPreview(app);
         end
 
-        % Callback function: not associated with a component
+        % Callback function
         function delay2EditFieldValueChanged(app, event)
             buildPreview(app);
         end
 
-        % Callback function: not associated with a component
+        % Callback function
         function delay3EditFieldValueChanged(app, event)
             buildPreview(app);
         end
 
-        % Callback function: not associated with a component
+        % Callback function
         function delay4EditFieldValueChanged(app, event)
             buildPreview(app);
         end
@@ -785,7 +779,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             buildPreview(app);
         end
 
-        % Callback function: not associated with a component
+        % Callback function
         function delayCheckBoxValueChanged(app, event)
             buildPreview(app);
         end
@@ -830,7 +824,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             buildPreview(app);
         end
 
-        % Callback function: not associated with a component
+        % Callback function
         function offsetCheckBoxValueChanged(app, event)
             buildPreview(app);
         end
@@ -1057,7 +1051,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.SelectfilepathEditField = uieditfield(app.GridLayout8, 'text');
             app.SelectfilepathEditField.Layout.Row = 1;
             app.SelectfilepathEditField.Layout.Column = 2;
-            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator';
+            app.SelectfilepathEditField.Value = '\\space\fukushima\RM\prj_simpleEfficiency\experiment_currentSense\20240328_frequencyResponse';
 
             % Create BrowseButton
             app.BrowseButton = uibutton(app.GridLayout8, 'push');
