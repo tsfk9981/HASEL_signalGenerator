@@ -80,8 +80,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         AmplitudeLabel                matlab.ui.control.Label
         FilenamesPanel                matlab.ui.container.Panel
         GridLayout8                   matlab.ui.container.GridLayout
-        RawfileprefixEditField        matlab.ui.control.EditField
-        RawfileprefixEditFieldLabel   matlab.ui.control.Label
         ProcessedfilenameEditField    matlab.ui.control.EditField
         ProcessedfilenameLabel        matlab.ui.control.Label
         GoButton                      matlab.ui.control.StateButton
@@ -102,52 +100,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
         DAQtypeButtonGroup            matlab.ui.container.ButtonGroup
         outputs4Button                matlab.ui.control.RadioButton
         outputs2Button                matlab.ui.control.RadioButton
-        SetupPanel_2                  matlab.ui.container.Panel
-        GridLayout4                   matlab.ui.container.GridLayout
-        GridLayout6                   matlab.ui.container.GridLayout
-        kneeLabel                     matlab.ui.control.Label
-        encoderLabel_2                matlab.ui.control.Label
-        AI17Label                     matlab.ui.control.Label
-        hipLabel                      matlab.ui.control.Label
-        encoderLabel                  matlab.ui.control.Label
-        AI16Label                     matlab.ui.control.Label
-        currentmonitorLabel_4         matlab.ui.control.Label
-        Trek4Label_3                  matlab.ui.control.Label
-        AI7Label                      matlab.ui.control.Label
-        voltagemonitorLabel_11        matlab.ui.control.Label
-        Trek4Label_2                  matlab.ui.control.Label
-        AI6Label                      matlab.ui.control.Label
-        currentmonitorLabel_3         matlab.ui.control.Label
-        Trek3Label_3                  matlab.ui.control.Label
-        AI5Label                      matlab.ui.control.Label
-        voltagemonitorLabel_10        matlab.ui.control.Label
-        Trek3Label_2                  matlab.ui.control.Label
-        AI4Label                      matlab.ui.control.Label
-        currentmonitorLabel_2         matlab.ui.control.Label
-        Trek2Label_3                  matlab.ui.control.Label
-        AI3Label                      matlab.ui.control.Label
-        voltagemonitorLabel_9         matlab.ui.control.Label
-        Trek2Label_2                  matlab.ui.control.Label
-        AI2Label                      matlab.ui.control.Label
-        currentmonitorLabel           matlab.ui.control.Label
-        Trek1Label_15                 matlab.ui.control.Label
-        AI1Label                      matlab.ui.control.Label
-        voltagemonitorLabel_8         matlab.ui.control.Label
-        Trek1Label_14                 matlab.ui.control.Label
-        AI0Label_8                    matlab.ui.control.Label
-        GridLayout5                   matlab.ui.container.GridLayout
-        voltageinLabel_4              matlab.ui.control.Label
-        Trek4Label                    matlab.ui.control.Label
-        AO0Label_2                    matlab.ui.control.Label
-        voltageinLabel_3              matlab.ui.control.Label
-        Trek3Label                    matlab.ui.control.Label
-        AO3Label_2                    matlab.ui.control.Label
-        voltageinLabel_2              matlab.ui.control.Label
-        Trek2Label                    matlab.ui.control.Label
-        AO2Label_2                    matlab.ui.control.Label
-        voltageinLabel                matlab.ui.control.Label
-        Trek1Label_22                 matlab.ui.control.Label
-        AO1Label_2                    matlab.ui.control.Label
         UIAxes                        matlab.ui.control.UIAxes
     end
 
@@ -769,7 +721,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             buildPreview(app);
         end
 
-        % Callback function: not associated with a component
+        % Callback function
         function MaxvoltageEditFieldValueChanged(app, event)
             buildPreview(app);
         end
@@ -1045,7 +997,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
             % Create UIFigure and hide until all components are created
             app.UIFigure = uifigure('Visible', 'off');
-            app.UIFigure.Position = [100 100 1555 688];
+            app.UIFigure.Position = [100 100 1313 688];
             app.UIFigure.Name = 'MATLAB App';
 
             % Create UIAxes
@@ -1057,306 +1009,27 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.UIAxes.XTickLabelRotation = 0;
             app.UIAxes.YTickLabelRotation = 0;
             app.UIAxes.ZTickLabelRotation = 0;
-            app.UIAxes.Position = [21 402 1251 270];
-
-            % Create SetupPanel_2
-            app.SetupPanel_2 = uipanel(app.UIFigure);
-            app.SetupPanel_2.TitlePosition = 'centertop';
-            app.SetupPanel_2.Title = 'Setup';
-            app.SetupPanel_2.FontWeight = 'bold';
-            app.SetupPanel_2.FontSize = 14;
-            app.SetupPanel_2.Position = [1305 26 231 646];
-
-            % Create GridLayout4
-            app.GridLayout4 = uigridlayout(app.SetupPanel_2);
-            app.GridLayout4.ColumnWidth = {'1x'};
-            app.GridLayout4.RowHeight = {'fit', 'fit', '1x'};
-
-            % Create GridLayout5
-            app.GridLayout5 = uigridlayout(app.GridLayout4);
-            app.GridLayout5.ColumnWidth = {'fit', 'fit', 'fit'};
-            app.GridLayout5.RowHeight = {'1x', '1x', '1x', '1x'};
-            app.GridLayout5.Layout.Row = 1;
-            app.GridLayout5.Layout.Column = 1;
-
-            % Create AO1Label_2
-            app.AO1Label_2 = uilabel(app.GridLayout5);
-            app.AO1Label_2.Layout.Row = 1;
-            app.AO1Label_2.Layout.Column = 1;
-            app.AO1Label_2.Text = 'AO1';
-
-            % Create Trek1Label_22
-            app.Trek1Label_22 = uilabel(app.GridLayout5);
-            app.Trek1Label_22.Layout.Row = 1;
-            app.Trek1Label_22.Layout.Column = 2;
-            app.Trek1Label_22.Text = 'Trek 1';
-
-            % Create voltageinLabel
-            app.voltageinLabel = uilabel(app.GridLayout5);
-            app.voltageinLabel.Layout.Row = 1;
-            app.voltageinLabel.Layout.Column = 3;
-            app.voltageinLabel.Text = 'voltage in';
-
-            % Create AO2Label_2
-            app.AO2Label_2 = uilabel(app.GridLayout5);
-            app.AO2Label_2.Layout.Row = 2;
-            app.AO2Label_2.Layout.Column = 1;
-            app.AO2Label_2.Text = 'AO2';
-
-            % Create Trek2Label
-            app.Trek2Label = uilabel(app.GridLayout5);
-            app.Trek2Label.Layout.Row = 2;
-            app.Trek2Label.Layout.Column = 2;
-            app.Trek2Label.Text = 'Trek 2';
-
-            % Create voltageinLabel_2
-            app.voltageinLabel_2 = uilabel(app.GridLayout5);
-            app.voltageinLabel_2.Layout.Row = 2;
-            app.voltageinLabel_2.Layout.Column = 3;
-            app.voltageinLabel_2.Text = 'voltage in';
-
-            % Create AO3Label_2
-            app.AO3Label_2 = uilabel(app.GridLayout5);
-            app.AO3Label_2.Layout.Row = 3;
-            app.AO3Label_2.Layout.Column = 1;
-            app.AO3Label_2.Text = 'AO3';
-
-            % Create Trek3Label
-            app.Trek3Label = uilabel(app.GridLayout5);
-            app.Trek3Label.Layout.Row = 3;
-            app.Trek3Label.Layout.Column = 2;
-            app.Trek3Label.Text = 'Trek 3';
-
-            % Create voltageinLabel_3
-            app.voltageinLabel_3 = uilabel(app.GridLayout5);
-            app.voltageinLabel_3.Layout.Row = 3;
-            app.voltageinLabel_3.Layout.Column = 3;
-            app.voltageinLabel_3.Text = 'voltage in';
-
-            % Create AO0Label_2
-            app.AO0Label_2 = uilabel(app.GridLayout5);
-            app.AO0Label_2.Layout.Row = 4;
-            app.AO0Label_2.Layout.Column = 1;
-            app.AO0Label_2.Text = 'AO0';
-
-            % Create Trek4Label
-            app.Trek4Label = uilabel(app.GridLayout5);
-            app.Trek4Label.Layout.Row = 4;
-            app.Trek4Label.Layout.Column = 2;
-            app.Trek4Label.Text = 'Trek 4';
-
-            % Create voltageinLabel_4
-            app.voltageinLabel_4 = uilabel(app.GridLayout5);
-            app.voltageinLabel_4.Layout.Row = 4;
-            app.voltageinLabel_4.Layout.Column = 3;
-            app.voltageinLabel_4.Text = 'voltage in';
-
-            % Create GridLayout6
-            app.GridLayout6 = uigridlayout(app.GridLayout4);
-            app.GridLayout6.ColumnWidth = {'fit', 'fit', 'fit'};
-            app.GridLayout6.RowHeight = {'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
-            app.GridLayout6.Layout.Row = 2;
-            app.GridLayout6.Layout.Column = 1;
-
-            % Create AI0Label_8
-            app.AI0Label_8 = uilabel(app.GridLayout6);
-            app.AI0Label_8.Layout.Row = 1;
-            app.AI0Label_8.Layout.Column = 1;
-            app.AI0Label_8.Text = 'AI0';
-
-            % Create Trek1Label_14
-            app.Trek1Label_14 = uilabel(app.GridLayout6);
-            app.Trek1Label_14.Layout.Row = 1;
-            app.Trek1Label_14.Layout.Column = 2;
-            app.Trek1Label_14.Text = 'Trek 1';
-
-            % Create voltagemonitorLabel_8
-            app.voltagemonitorLabel_8 = uilabel(app.GridLayout6);
-            app.voltagemonitorLabel_8.Layout.Row = 1;
-            app.voltagemonitorLabel_8.Layout.Column = 3;
-            app.voltagemonitorLabel_8.Text = 'voltage monitor';
-
-            % Create AI1Label
-            app.AI1Label = uilabel(app.GridLayout6);
-            app.AI1Label.Layout.Row = 2;
-            app.AI1Label.Layout.Column = 1;
-            app.AI1Label.Text = 'AI1';
-
-            % Create Trek1Label_15
-            app.Trek1Label_15 = uilabel(app.GridLayout6);
-            app.Trek1Label_15.Layout.Row = 2;
-            app.Trek1Label_15.Layout.Column = 2;
-            app.Trek1Label_15.Text = 'Trek 1';
-
-            % Create currentmonitorLabel
-            app.currentmonitorLabel = uilabel(app.GridLayout6);
-            app.currentmonitorLabel.Layout.Row = 2;
-            app.currentmonitorLabel.Layout.Column = 3;
-            app.currentmonitorLabel.Text = 'current monitor';
-
-            % Create AI2Label
-            app.AI2Label = uilabel(app.GridLayout6);
-            app.AI2Label.Layout.Row = 3;
-            app.AI2Label.Layout.Column = 1;
-            app.AI2Label.Text = 'AI2';
-
-            % Create Trek2Label_2
-            app.Trek2Label_2 = uilabel(app.GridLayout6);
-            app.Trek2Label_2.Layout.Row = 3;
-            app.Trek2Label_2.Layout.Column = 2;
-            app.Trek2Label_2.Text = 'Trek 2';
-
-            % Create voltagemonitorLabel_9
-            app.voltagemonitorLabel_9 = uilabel(app.GridLayout6);
-            app.voltagemonitorLabel_9.Layout.Row = 3;
-            app.voltagemonitorLabel_9.Layout.Column = 3;
-            app.voltagemonitorLabel_9.Text = 'voltage monitor';
-
-            % Create AI3Label
-            app.AI3Label = uilabel(app.GridLayout6);
-            app.AI3Label.Layout.Row = 4;
-            app.AI3Label.Layout.Column = 1;
-            app.AI3Label.Text = 'AI3';
-
-            % Create Trek2Label_3
-            app.Trek2Label_3 = uilabel(app.GridLayout6);
-            app.Trek2Label_3.Layout.Row = 4;
-            app.Trek2Label_3.Layout.Column = 2;
-            app.Trek2Label_3.Text = 'Trek 2';
-
-            % Create currentmonitorLabel_2
-            app.currentmonitorLabel_2 = uilabel(app.GridLayout6);
-            app.currentmonitorLabel_2.Layout.Row = 4;
-            app.currentmonitorLabel_2.Layout.Column = 3;
-            app.currentmonitorLabel_2.Text = 'current monitor';
-
-            % Create AI4Label
-            app.AI4Label = uilabel(app.GridLayout6);
-            app.AI4Label.Layout.Row = 5;
-            app.AI4Label.Layout.Column = 1;
-            app.AI4Label.Text = 'AI4';
-
-            % Create Trek3Label_2
-            app.Trek3Label_2 = uilabel(app.GridLayout6);
-            app.Trek3Label_2.Layout.Row = 5;
-            app.Trek3Label_2.Layout.Column = 2;
-            app.Trek3Label_2.Text = 'Trek 3';
-
-            % Create voltagemonitorLabel_10
-            app.voltagemonitorLabel_10 = uilabel(app.GridLayout6);
-            app.voltagemonitorLabel_10.Layout.Row = 5;
-            app.voltagemonitorLabel_10.Layout.Column = 3;
-            app.voltagemonitorLabel_10.Text = 'voltage monitor';
-
-            % Create AI5Label
-            app.AI5Label = uilabel(app.GridLayout6);
-            app.AI5Label.Layout.Row = 6;
-            app.AI5Label.Layout.Column = 1;
-            app.AI5Label.Text = 'AI5';
-
-            % Create Trek3Label_3
-            app.Trek3Label_3 = uilabel(app.GridLayout6);
-            app.Trek3Label_3.Layout.Row = 6;
-            app.Trek3Label_3.Layout.Column = 2;
-            app.Trek3Label_3.Text = 'Trek 3';
-
-            % Create currentmonitorLabel_3
-            app.currentmonitorLabel_3 = uilabel(app.GridLayout6);
-            app.currentmonitorLabel_3.Layout.Row = 6;
-            app.currentmonitorLabel_3.Layout.Column = 3;
-            app.currentmonitorLabel_3.Text = 'current monitor';
-
-            % Create AI6Label
-            app.AI6Label = uilabel(app.GridLayout6);
-            app.AI6Label.Layout.Row = 7;
-            app.AI6Label.Layout.Column = 1;
-            app.AI6Label.Text = 'AI6';
-
-            % Create Trek4Label_2
-            app.Trek4Label_2 = uilabel(app.GridLayout6);
-            app.Trek4Label_2.Layout.Row = 7;
-            app.Trek4Label_2.Layout.Column = 2;
-            app.Trek4Label_2.Text = 'Trek 4';
-
-            % Create voltagemonitorLabel_11
-            app.voltagemonitorLabel_11 = uilabel(app.GridLayout6);
-            app.voltagemonitorLabel_11.Layout.Row = 7;
-            app.voltagemonitorLabel_11.Layout.Column = 3;
-            app.voltagemonitorLabel_11.Text = 'voltage monitor';
-
-            % Create AI7Label
-            app.AI7Label = uilabel(app.GridLayout6);
-            app.AI7Label.Layout.Row = 8;
-            app.AI7Label.Layout.Column = 1;
-            app.AI7Label.Text = 'AI7';
-
-            % Create Trek4Label_3
-            app.Trek4Label_3 = uilabel(app.GridLayout6);
-            app.Trek4Label_3.Layout.Row = 8;
-            app.Trek4Label_3.Layout.Column = 2;
-            app.Trek4Label_3.Text = 'Trek 4';
-
-            % Create currentmonitorLabel_4
-            app.currentmonitorLabel_4 = uilabel(app.GridLayout6);
-            app.currentmonitorLabel_4.Layout.Row = 8;
-            app.currentmonitorLabel_4.Layout.Column = 3;
-            app.currentmonitorLabel_4.Text = 'current monitor';
-
-            % Create AI16Label
-            app.AI16Label = uilabel(app.GridLayout6);
-            app.AI16Label.Layout.Row = 9;
-            app.AI16Label.Layout.Column = 1;
-            app.AI16Label.Text = 'AI16';
-
-            % Create encoderLabel
-            app.encoderLabel = uilabel(app.GridLayout6);
-            app.encoderLabel.Layout.Row = 9;
-            app.encoderLabel.Layout.Column = 2;
-            app.encoderLabel.Text = 'encoder';
-
-            % Create hipLabel
-            app.hipLabel = uilabel(app.GridLayout6);
-            app.hipLabel.Layout.Row = 9;
-            app.hipLabel.Layout.Column = 3;
-            app.hipLabel.Text = 'hip';
-
-            % Create AI17Label
-            app.AI17Label = uilabel(app.GridLayout6);
-            app.AI17Label.Layout.Row = 10;
-            app.AI17Label.Layout.Column = 1;
-            app.AI17Label.Text = 'AI17';
-
-            % Create encoderLabel_2
-            app.encoderLabel_2 = uilabel(app.GridLayout6);
-            app.encoderLabel_2.Layout.Row = 10;
-            app.encoderLabel_2.Layout.Column = 2;
-            app.encoderLabel_2.Text = 'encoder';
-
-            % Create kneeLabel
-            app.kneeLabel = uilabel(app.GridLayout6);
-            app.kneeLabel.Layout.Row = 10;
-            app.kneeLabel.Layout.Column = 3;
-            app.kneeLabel.Text = 'knee';
+            app.UIAxes.Position = [21 346 1256 326];
 
             % Create DAQtypeButtonGroup
             app.DAQtypeButtonGroup = uibuttongroup(app.UIFigure);
             app.DAQtypeButtonGroup.TitlePosition = 'centertop';
             app.DAQtypeButtonGroup.Title = 'DAQ type';
             app.DAQtypeButtonGroup.FontWeight = 'bold';
-            app.DAQtypeButtonGroup.Position = [24 221 145 131];
+            app.DAQtypeButtonGroup.Position = [21 221 148 98];
 
             % Create outputs2Button
             app.outputs2Button = uiradiobutton(app.DAQtypeButtonGroup);
             app.outputs2Button.Enable = 'off';
             app.outputs2Button.Text = '2 outputs';
-            app.outputs2Button.Position = [10 73 71 22];
+            app.outputs2Button.Position = [10 40 71 22];
             app.outputs2Button.Value = true;
 
             % Create outputs4Button
             app.outputs4Button = uiradiobutton(app.DAQtypeButtonGroup);
             app.outputs4Button.Enable = 'off';
             app.outputs4Button.Text = '4 outputs';
-            app.outputs4Button.Position = [10 44 71 22];
+            app.outputs4Button.Position = [10 11 71 22];
 
             % Create SignalparameterPanel
             app.SignalparameterPanel = uipanel(app.UIFigure);
@@ -1364,12 +1037,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.SignalparameterPanel.Title = 'Signal parameter';
             app.SignalparameterPanel.FontWeight = 'bold';
             app.SignalparameterPanel.FontSize = 14;
-            app.SignalparameterPanel.Position = [202 220 439 132];
+            app.SignalparameterPanel.Position = [188 221 453 98];
 
             % Create GridLayout7
             app.GridLayout7 = uigridlayout(app.SignalparameterPanel);
             app.GridLayout7.ColumnWidth = {'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
-            app.GridLayout7.RowHeight = {'1x', '1x', '1x'};
             app.GridLayout7.ColumnSpacing = 10.125;
             app.GridLayout7.Padding = [10.125 10 10.125 10];
 
@@ -1442,12 +1114,11 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.FilenamesPanel.Title = 'File names';
             app.FilenamesPanel.FontWeight = 'bold';
             app.FilenamesPanel.FontSize = 14;
-            app.FilenamesPanel.Position = [678 220 612 132];
+            app.FilenamesPanel.Position = [666 221 612 98];
 
             % Create GridLayout8
             app.GridLayout8 = uigridlayout(app.FilenamesPanel);
-            app.GridLayout8.ColumnWidth = {'fit', '3x', 'fit', '1x'};
-            app.GridLayout8.RowHeight = {'1x', '1x', '1x'};
+            app.GridLayout8.ColumnWidth = {'fit', '2x', 'fit', '1x'};
 
             % Create SelectfilepathEditFieldLabel
             app.SelectfilepathEditFieldLabel = uilabel(app.GridLayout8);
@@ -1476,7 +1147,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.GoButton.BackgroundColor = [0.9608 0.9608 0.9608];
             app.GoButton.FontSize = 24;
             app.GoButton.FontWeight = 'bold';
-            app.GoButton.Layout.Row = [1 3];
+            app.GoButton.Layout.Row = [1 2];
             app.GoButton.Layout.Column = 4;
 
             % Create ProcessedfilenameLabel
@@ -1492,28 +1163,13 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.ProcessedfilenameEditField.Layout.Column = 2;
             app.ProcessedfilenameEditField.Value = 'XXX';
 
-            % Create RawfileprefixEditFieldLabel
-            app.RawfileprefixEditFieldLabel = uilabel(app.GridLayout8);
-            app.RawfileprefixEditFieldLabel.HorizontalAlignment = 'right';
-            app.RawfileprefixEditFieldLabel.Enable = 'off';
-            app.RawfileprefixEditFieldLabel.Layout.Row = 3;
-            app.RawfileprefixEditFieldLabel.Layout.Column = 1;
-            app.RawfileprefixEditFieldLabel.Text = 'Raw file prefix';
-
-            % Create RawfileprefixEditField
-            app.RawfileprefixEditField = uieditfield(app.GridLayout8, 'text');
-            app.RawfileprefixEditField.Enable = 'off';
-            app.RawfileprefixEditField.Layout.Row = 3;
-            app.RawfileprefixEditField.Layout.Column = 2;
-            app.RawfileprefixEditField.Value = 'raw_';
-
             % Create WavesettingsPanel
             app.WavesettingsPanel = uipanel(app.UIFigure);
             app.WavesettingsPanel.TitlePosition = 'centertop';
             app.WavesettingsPanel.Title = 'Wave settings';
             app.WavesettingsPanel.FontWeight = 'bold';
             app.WavesettingsPanel.FontSize = 14;
-            app.WavesettingsPanel.Position = [23 26 1269 184];
+            app.WavesettingsPanel.Position = [21 26 1257 184];
 
             % Create GridLayout
             app.GridLayout = uigridlayout(app.WavesettingsPanel);
