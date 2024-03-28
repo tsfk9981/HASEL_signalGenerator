@@ -5,6 +5,16 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
         UIFigure                      matlab.ui.Figure
         WavesettingsPanel             matlab.ui.container.Panel
         GridLayout                    matlab.ui.container.GridLayout
+        Trigger4EditField             matlab.ui.control.NumericEditField
+        Trigger4EditFieldLabel        matlab.ui.control.Label
+        Trigger3EditField             matlab.ui.control.NumericEditField
+        Trigger3EditFieldLabel        matlab.ui.control.Label
+        Trigger2EditField             matlab.ui.control.NumericEditField
+        Trigger2EditFieldLabel        matlab.ui.control.Label
+        kVLabel_4                     matlab.ui.control.Label
+        Trigger1EditField             matlab.ui.control.NumericEditField
+        Trigger1EditFieldLabel        matlab.ui.control.Label
+        TriggerCheckBox               matlab.ui.control.CheckBox
         method4DropDown               matlab.ui.control.DropDown
         method4DropDownLabel          matlab.ui.control.Label
         offset4EditField              matlab.ui.control.NumericEditField
@@ -87,17 +97,17 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             time = (-app.timeInit: 1/sampRate: timeTotal - 1/sampRate)';
 
 
-            voltageSignal_1 = createBaseSignal(app, time, app.Amplitude1EditField.Value, app.offset1EditField.Value, app.method1DropDown.Value, app.Reversepolarity1Button.Value);
-            voltageSignal_2 = createBaseSignal(app, time, app.Amplitude2EditField.Value, app.offset2EditField.Value, app.method2DropDown.Value, app.Reversepolarity2Button.Value);
-            voltageSignal_3 = createBaseSignal(app, time, app.Amplitude3EditField.Value, app.offset3EditField.Value, app.method3DropDown.Value, app.Reversepolarity3Button.Value);
-            voltageSignal_4 = createBaseSignal(app, time, app.Amplitude4EditField.Value, app.offset4EditField.Value, app.method4DropDown.Value, app.Reversepolarity4Button.Value);
+            voltageSignal_1 = createBaseSignal(app, time, app.Amplitude1EditField.Value, app.offset1EditField.Value, app.method1DropDown.Value, app.Reversepolarity1Button.Value, app.Trigger1EditField.Value*app.TriggerCheckBox.Value);
+            voltageSignal_2 = createBaseSignal(app, time, app.Amplitude2EditField.Value, app.offset2EditField.Value, app.method2DropDown.Value, app.Reversepolarity2Button.Value, app.Trigger2EditField.Value*app.TriggerCheckBox.Value);
+            voltageSignal_3 = createBaseSignal(app, time, app.Amplitude3EditField.Value, app.offset3EditField.Value, app.method3DropDown.Value, app.Reversepolarity3Button.Value, app.Trigger3EditField.Value*app.TriggerCheckBox.Value);
+            voltageSignal_4 = createBaseSignal(app, time, app.Amplitude4EditField.Value, app.offset4EditField.Value, app.method4DropDown.Value, app.Reversepolarity4Button.Value, app.Trigger4EditField.Value*app.TriggerCheckBox.Value);
 
             refSignal = zeros(size(time)); % dump signal, originally used for reference signal for TF estimation
 
             app.fullSignal = [time, refSignal, voltageSignal_1, voltageSignal_2, voltageSignal_3, voltageSignal_4];
         end
 
-        function voltageSignal = createBaseSignal(app, time, amp, offset, method, flag_rp)
+        function voltageSignal = createBaseSignal(app, time, amp, offset, method, flag_rp, triggerLevel)
             time_total = app.TotaltimeEditField.Value;
 
             freq0 = app.FrequencystartEditField.Value;
@@ -113,6 +123,11 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             voltageSignal = voltageSignal + offset; % add offset
 
             voltageSignal(time < 0) = 0; % zero padding for initializing time
+
+            if 1
+                voltageSignal(time < -0.4) = triggerLevel;
+                voltageSignal(time < -0.5) = 0;
+            end
 
         end
 
@@ -888,6 +903,31 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
         function FrequencystopEditFieldValueChanged(app, event)
             buildPreview(app);
         end
+
+        % Value changed function: TriggerCheckBox
+        function TriggerCheckBoxValueChanged(app, event)
+            buildPreview(app);
+        end
+
+        % Value changed function: Trigger1EditField
+        function Trigger1EditFieldValueChanged(app, event)
+            buildPreview(app);
+        end
+
+        % Value changed function: Trigger2EditField
+        function Trigger2EditFieldValueChanged(app, event)
+            buildPreview(app);
+        end
+
+        % Value changed function: Trigger3EditField
+        function Trigger3EditFieldValueChanged(app, event)
+            buildPreview(app);
+        end
+
+        % Value changed function: Trigger4EditField
+        function Trigger4EditFieldValueChanged(app, event)
+            buildPreview(app);
+        end
     end
 
     % Component initialization
@@ -1093,28 +1133,28 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
 
             % Create GridLayout
             app.GridLayout = uigridlayout(app.WavesettingsPanel);
-            app.GridLayout.ColumnWidth = {'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
+            app.GridLayout.ColumnWidth = {'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
             app.GridLayout.RowHeight = {'1x', '1x', '1x', '1x', '1x'};
 
             % Create kVLabel_3
             app.kVLabel_3 = uilabel(app.GridLayout);
             app.kVLabel_3.HorizontalAlignment = 'center';
             app.kVLabel_3.Layout.Row = 1;
-            app.kVLabel_3.Layout.Column = 3;
+            app.kVLabel_3.Layout.Column = 5;
             app.kVLabel_3.Text = 'kV';
 
             % Create kVLabel_2
             app.kVLabel_2 = uilabel(app.GridLayout);
             app.kVLabel_2.HorizontalAlignment = 'center';
             app.kVLabel_2.Layout.Row = 1;
-            app.kVLabel_2.Layout.Column = 5;
+            app.kVLabel_2.Layout.Column = 7;
             app.kVLabel_2.Text = 'kV';
 
             % Create methodLabel
             app.methodLabel = uilabel(app.GridLayout);
             app.methodLabel.HorizontalAlignment = 'center';
             app.methodLabel.Layout.Row = 1;
-            app.methodLabel.Layout.Column = 7;
+            app.methodLabel.Layout.Column = 9;
             app.methodLabel.Text = 'method';
 
             % Create Reversepolarity1Button
@@ -1122,40 +1162,40 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.Reversepolarity1Button.ValueChangedFcn = createCallbackFcn(app, @Reversepolarity1ButtonValueChanged2, true);
             app.Reversepolarity1Button.Text = 'Reverse polarity 1';
             app.Reversepolarity1Button.Layout.Row = 2;
-            app.Reversepolarity1Button.Layout.Column = 1;
+            app.Reversepolarity1Button.Layout.Column = 3;
 
             % Create Amplitude1Label
             app.Amplitude1Label = uilabel(app.GridLayout);
             app.Amplitude1Label.HorizontalAlignment = 'right';
             app.Amplitude1Label.Layout.Row = 2;
-            app.Amplitude1Label.Layout.Column = 2;
+            app.Amplitude1Label.Layout.Column = 4;
             app.Amplitude1Label.Text = 'Amplitude 1';
 
             % Create Amplitude1EditField
             app.Amplitude1EditField = uieditfield(app.GridLayout, 'numeric');
             app.Amplitude1EditField.ValueChangedFcn = createCallbackFcn(app, @Amplitude1EditFieldValueChanged, true);
             app.Amplitude1EditField.Layout.Row = 2;
-            app.Amplitude1EditField.Layout.Column = 3;
+            app.Amplitude1EditField.Layout.Column = 5;
             app.Amplitude1EditField.Value = 5;
 
             % Create offset1EditFieldLabel
             app.offset1EditFieldLabel = uilabel(app.GridLayout);
             app.offset1EditFieldLabel.HorizontalAlignment = 'right';
             app.offset1EditFieldLabel.Layout.Row = 2;
-            app.offset1EditFieldLabel.Layout.Column = 4;
+            app.offset1EditFieldLabel.Layout.Column = 6;
             app.offset1EditFieldLabel.Text = 'offset 1';
 
             % Create offset1EditField
             app.offset1EditField = uieditfield(app.GridLayout, 'numeric');
             app.offset1EditField.ValueChangedFcn = createCallbackFcn(app, @offset1EditFieldValueChanged, true);
             app.offset1EditField.Layout.Row = 2;
-            app.offset1EditField.Layout.Column = 5;
+            app.offset1EditField.Layout.Column = 7;
 
             % Create method1DropDownLabel
             app.method1DropDownLabel = uilabel(app.GridLayout);
             app.method1DropDownLabel.HorizontalAlignment = 'right';
             app.method1DropDownLabel.Layout.Row = 2;
-            app.method1DropDownLabel.Layout.Column = 6;
+            app.method1DropDownLabel.Layout.Column = 8;
             app.method1DropDownLabel.Text = 'method 1';
 
             % Create method1DropDown
@@ -1163,7 +1203,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.method1DropDown.Items = {'linear', 'quadratic', 'logarithmic'};
             app.method1DropDown.ValueChangedFcn = createCallbackFcn(app, @method1DropDownValueChanged, true);
             app.method1DropDown.Layout.Row = 2;
-            app.method1DropDown.Layout.Column = 7;
+            app.method1DropDown.Layout.Column = 9;
             app.method1DropDown.Value = 'linear';
 
             % Create Reversepolarity2Button
@@ -1171,40 +1211,40 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.Reversepolarity2Button.ValueChangedFcn = createCallbackFcn(app, @Reversepolarity2ButtonValueChanged2, true);
             app.Reversepolarity2Button.Text = 'Reverse polarity 2';
             app.Reversepolarity2Button.Layout.Row = 3;
-            app.Reversepolarity2Button.Layout.Column = 1;
+            app.Reversepolarity2Button.Layout.Column = 3;
 
             % Create Amplitude2EditFieldLabel
             app.Amplitude2EditFieldLabel = uilabel(app.GridLayout);
             app.Amplitude2EditFieldLabel.HorizontalAlignment = 'right';
             app.Amplitude2EditFieldLabel.Layout.Row = 3;
-            app.Amplitude2EditFieldLabel.Layout.Column = 2;
+            app.Amplitude2EditFieldLabel.Layout.Column = 4;
             app.Amplitude2EditFieldLabel.Text = 'Amplitude 2';
 
             % Create Amplitude2EditField
             app.Amplitude2EditField = uieditfield(app.GridLayout, 'numeric');
             app.Amplitude2EditField.ValueChangedFcn = createCallbackFcn(app, @Amplitude2EditFieldValueChanged, true);
             app.Amplitude2EditField.Layout.Row = 3;
-            app.Amplitude2EditField.Layout.Column = 3;
+            app.Amplitude2EditField.Layout.Column = 5;
             app.Amplitude2EditField.Value = 3;
 
             % Create offset2EditFieldLabel
             app.offset2EditFieldLabel = uilabel(app.GridLayout);
             app.offset2EditFieldLabel.HorizontalAlignment = 'right';
             app.offset2EditFieldLabel.Layout.Row = 3;
-            app.offset2EditFieldLabel.Layout.Column = 4;
+            app.offset2EditFieldLabel.Layout.Column = 6;
             app.offset2EditFieldLabel.Text = 'offset 2';
 
             % Create offset2EditField
             app.offset2EditField = uieditfield(app.GridLayout, 'numeric');
             app.offset2EditField.ValueChangedFcn = createCallbackFcn(app, @offset2EditFieldValueChanged, true);
             app.offset2EditField.Layout.Row = 3;
-            app.offset2EditField.Layout.Column = 5;
+            app.offset2EditField.Layout.Column = 7;
 
             % Create method2DropDownLabel
             app.method2DropDownLabel = uilabel(app.GridLayout);
             app.method2DropDownLabel.HorizontalAlignment = 'right';
             app.method2DropDownLabel.Layout.Row = 3;
-            app.method2DropDownLabel.Layout.Column = 6;
+            app.method2DropDownLabel.Layout.Column = 8;
             app.method2DropDownLabel.Text = 'method 2';
 
             % Create method2DropDown
@@ -1212,7 +1252,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.method2DropDown.Items = {'linear', 'quadratic', 'logarithmic'};
             app.method2DropDown.ValueChangedFcn = createCallbackFcn(app, @method2DropDownValueChanged, true);
             app.method2DropDown.Layout.Row = 3;
-            app.method2DropDown.Layout.Column = 7;
+            app.method2DropDown.Layout.Column = 9;
             app.method2DropDown.Value = 'linear';
 
             % Create Reversepolarity3Button
@@ -1220,39 +1260,39 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.Reversepolarity3Button.ValueChangedFcn = createCallbackFcn(app, @Reversepolarity3ButtonValueChanged2, true);
             app.Reversepolarity3Button.Text = 'Reverse polarity 3';
             app.Reversepolarity3Button.Layout.Row = 4;
-            app.Reversepolarity3Button.Layout.Column = 1;
+            app.Reversepolarity3Button.Layout.Column = 3;
 
             % Create Amplitude3EditFieldLabel
             app.Amplitude3EditFieldLabel = uilabel(app.GridLayout);
             app.Amplitude3EditFieldLabel.HorizontalAlignment = 'right';
             app.Amplitude3EditFieldLabel.Layout.Row = 4;
-            app.Amplitude3EditFieldLabel.Layout.Column = 2;
+            app.Amplitude3EditFieldLabel.Layout.Column = 4;
             app.Amplitude3EditFieldLabel.Text = 'Amplitude 3';
 
             % Create Amplitude3EditField
             app.Amplitude3EditField = uieditfield(app.GridLayout, 'numeric');
             app.Amplitude3EditField.ValueChangedFcn = createCallbackFcn(app, @Amplitude3EditFieldValueChanged, true);
             app.Amplitude3EditField.Layout.Row = 4;
-            app.Amplitude3EditField.Layout.Column = 3;
+            app.Amplitude3EditField.Layout.Column = 5;
 
             % Create offset3EditFieldLabel
             app.offset3EditFieldLabel = uilabel(app.GridLayout);
             app.offset3EditFieldLabel.HorizontalAlignment = 'right';
             app.offset3EditFieldLabel.Layout.Row = 4;
-            app.offset3EditFieldLabel.Layout.Column = 4;
+            app.offset3EditFieldLabel.Layout.Column = 6;
             app.offset3EditFieldLabel.Text = 'offset 3';
 
             % Create offset3EditField
             app.offset3EditField = uieditfield(app.GridLayout, 'numeric');
             app.offset3EditField.ValueChangedFcn = createCallbackFcn(app, @offset3EditFieldValueChanged, true);
             app.offset3EditField.Layout.Row = 4;
-            app.offset3EditField.Layout.Column = 5;
+            app.offset3EditField.Layout.Column = 7;
 
             % Create method3DropDownLabel
             app.method3DropDownLabel = uilabel(app.GridLayout);
             app.method3DropDownLabel.HorizontalAlignment = 'right';
             app.method3DropDownLabel.Layout.Row = 4;
-            app.method3DropDownLabel.Layout.Column = 6;
+            app.method3DropDownLabel.Layout.Column = 8;
             app.method3DropDownLabel.Text = 'method 3';
 
             % Create method3DropDown
@@ -1260,7 +1300,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.method3DropDown.Items = {'linear', 'quadratic', 'logarithmic'};
             app.method3DropDown.ValueChangedFcn = createCallbackFcn(app, @method3DropDownValueChanged, true);
             app.method3DropDown.Layout.Row = 4;
-            app.method3DropDown.Layout.Column = 7;
+            app.method3DropDown.Layout.Column = 9;
             app.method3DropDown.Value = 'linear';
 
             % Create Reversepolarity4Button
@@ -1268,39 +1308,39 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.Reversepolarity4Button.ValueChangedFcn = createCallbackFcn(app, @Reversepolarity4ButtonValueChanged2, true);
             app.Reversepolarity4Button.Text = 'Reverse polarity 4';
             app.Reversepolarity4Button.Layout.Row = 5;
-            app.Reversepolarity4Button.Layout.Column = 1;
+            app.Reversepolarity4Button.Layout.Column = 3;
 
             % Create Amplitude4EditFieldLabel
             app.Amplitude4EditFieldLabel = uilabel(app.GridLayout);
             app.Amplitude4EditFieldLabel.HorizontalAlignment = 'right';
             app.Amplitude4EditFieldLabel.Layout.Row = 5;
-            app.Amplitude4EditFieldLabel.Layout.Column = 2;
+            app.Amplitude4EditFieldLabel.Layout.Column = 4;
             app.Amplitude4EditFieldLabel.Text = 'Amplitude 4';
 
             % Create Amplitude4EditField
             app.Amplitude4EditField = uieditfield(app.GridLayout, 'numeric');
             app.Amplitude4EditField.ValueChangedFcn = createCallbackFcn(app, @Amplitude4EditFieldValueChanged, true);
             app.Amplitude4EditField.Layout.Row = 5;
-            app.Amplitude4EditField.Layout.Column = 3;
+            app.Amplitude4EditField.Layout.Column = 5;
 
             % Create offset4EditFieldLabel
             app.offset4EditFieldLabel = uilabel(app.GridLayout);
             app.offset4EditFieldLabel.HorizontalAlignment = 'right';
             app.offset4EditFieldLabel.Layout.Row = 5;
-            app.offset4EditFieldLabel.Layout.Column = 4;
+            app.offset4EditFieldLabel.Layout.Column = 6;
             app.offset4EditFieldLabel.Text = 'offset 4';
 
             % Create offset4EditField
             app.offset4EditField = uieditfield(app.GridLayout, 'numeric');
             app.offset4EditField.ValueChangedFcn = createCallbackFcn(app, @offset4EditFieldValueChanged, true);
             app.offset4EditField.Layout.Row = 5;
-            app.offset4EditField.Layout.Column = 5;
+            app.offset4EditField.Layout.Column = 7;
 
             % Create method4DropDownLabel
             app.method4DropDownLabel = uilabel(app.GridLayout);
             app.method4DropDownLabel.HorizontalAlignment = 'right';
             app.method4DropDownLabel.Layout.Row = 5;
-            app.method4DropDownLabel.Layout.Column = 6;
+            app.method4DropDownLabel.Layout.Column = 8;
             app.method4DropDownLabel.Text = 'method 4';
 
             % Create method4DropDown
@@ -1308,8 +1348,75 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.method4DropDown.Items = {'linear', 'quadratic', 'logarithmic'};
             app.method4DropDown.ValueChangedFcn = createCallbackFcn(app, @method4DropDownValueChanged, true);
             app.method4DropDown.Layout.Row = 5;
-            app.method4DropDown.Layout.Column = 7;
+            app.method4DropDown.Layout.Column = 9;
             app.method4DropDown.Value = 'linear';
+
+            % Create TriggerCheckBox
+            app.TriggerCheckBox = uicheckbox(app.GridLayout);
+            app.TriggerCheckBox.ValueChangedFcn = createCallbackFcn(app, @TriggerCheckBoxValueChanged, true);
+            app.TriggerCheckBox.Text = 'Trigger';
+            app.TriggerCheckBox.Layout.Row = 1;
+            app.TriggerCheckBox.Layout.Column = 1;
+
+            % Create Trigger1EditFieldLabel
+            app.Trigger1EditFieldLabel = uilabel(app.GridLayout);
+            app.Trigger1EditFieldLabel.HorizontalAlignment = 'right';
+            app.Trigger1EditFieldLabel.Layout.Row = 2;
+            app.Trigger1EditFieldLabel.Layout.Column = 1;
+            app.Trigger1EditFieldLabel.Text = 'Trigger 1';
+
+            % Create Trigger1EditField
+            app.Trigger1EditField = uieditfield(app.GridLayout, 'numeric');
+            app.Trigger1EditField.ValueChangedFcn = createCallbackFcn(app, @Trigger1EditFieldValueChanged, true);
+            app.Trigger1EditField.Layout.Row = 2;
+            app.Trigger1EditField.Layout.Column = 2;
+            app.Trigger1EditField.Value = 1;
+
+            % Create kVLabel_4
+            app.kVLabel_4 = uilabel(app.GridLayout);
+            app.kVLabel_4.HorizontalAlignment = 'center';
+            app.kVLabel_4.Layout.Row = 1;
+            app.kVLabel_4.Layout.Column = 2;
+            app.kVLabel_4.Text = 'kV';
+
+            % Create Trigger2EditFieldLabel
+            app.Trigger2EditFieldLabel = uilabel(app.GridLayout);
+            app.Trigger2EditFieldLabel.HorizontalAlignment = 'right';
+            app.Trigger2EditFieldLabel.Layout.Row = 3;
+            app.Trigger2EditFieldLabel.Layout.Column = 1;
+            app.Trigger2EditFieldLabel.Text = 'Trigger 2';
+
+            % Create Trigger2EditField
+            app.Trigger2EditField = uieditfield(app.GridLayout, 'numeric');
+            app.Trigger2EditField.ValueChangedFcn = createCallbackFcn(app, @Trigger2EditFieldValueChanged, true);
+            app.Trigger2EditField.Layout.Row = 3;
+            app.Trigger2EditField.Layout.Column = 2;
+
+            % Create Trigger3EditFieldLabel
+            app.Trigger3EditFieldLabel = uilabel(app.GridLayout);
+            app.Trigger3EditFieldLabel.HorizontalAlignment = 'right';
+            app.Trigger3EditFieldLabel.Layout.Row = 4;
+            app.Trigger3EditFieldLabel.Layout.Column = 1;
+            app.Trigger3EditFieldLabel.Text = 'Trigger 3';
+
+            % Create Trigger3EditField
+            app.Trigger3EditField = uieditfield(app.GridLayout, 'numeric');
+            app.Trigger3EditField.ValueChangedFcn = createCallbackFcn(app, @Trigger3EditFieldValueChanged, true);
+            app.Trigger3EditField.Layout.Row = 4;
+            app.Trigger3EditField.Layout.Column = 2;
+
+            % Create Trigger4EditFieldLabel
+            app.Trigger4EditFieldLabel = uilabel(app.GridLayout);
+            app.Trigger4EditFieldLabel.HorizontalAlignment = 'right';
+            app.Trigger4EditFieldLabel.Layout.Row = 5;
+            app.Trigger4EditFieldLabel.Layout.Column = 1;
+            app.Trigger4EditFieldLabel.Text = 'Trigger 4';
+
+            % Create Trigger4EditField
+            app.Trigger4EditField = uieditfield(app.GridLayout, 'numeric');
+            app.Trigger4EditField.ValueChangedFcn = createCallbackFcn(app, @Trigger4EditFieldValueChanged, true);
+            app.Trigger4EditField.Layout.Row = 5;
+            app.Trigger4EditField.Layout.Column = 2;
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
