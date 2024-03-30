@@ -438,6 +438,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
 
 
             if endIndex >= length(app.Arr.time)
+                pause(0.5)
                 stop_measurement(app);
                 disp('successfully end')
                 goButtonReady(app);
@@ -711,8 +712,8 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             textPara = [...
                 app.method1DropDown.Value(1), '_',...
                 num2str(app.Amplitude1EditField.Value*10,   '%02.0f'), 'kV_',...
-                num2str(app.FrequencystartEditField.Value, '%03.0f'), 'Hz_',...
-                num2str(app.FrequencystopEditField.Value, '%03.0f'), 'Hz_',...
+                num2str(app.FrequencystartEditField.Value, '%04.0f'), 'Hz_',...
+                num2str(app.FrequencystopEditField.Value, '%04.0f'), 'Hz_',...
                 num2str(app.SamplerateEditField.Value,   '%04.0f'), 'Hz_',...
                 ];
             app.rawFilename = fullfile(app.SelectfilepathEditField.Value,...
@@ -756,7 +757,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
 
             app.timerStreamHandle = timer('TimerFcn', {@app.timerStreamCallback}, 'ExecutionMode', 'FixedRate', 'Period', 0.1,'StartDelay',.1);
 
-            SERIAL_PORT = 'COM4';       % change to device port
+            SERIAL_PORT = 'COM3';       % change to device port
             BAUD_RATE =  11520;
             app.CurrentSenseDongle = serialport(SERIAL_PORT, BAUD_RATE);
 
@@ -1183,7 +1184,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.SamplerateEditField.ValueChangedFcn = createCallbackFcn(app, @SamplerateEditFieldValueChanged, true);
             app.SamplerateEditField.Layout.Row = 1;
             app.SamplerateEditField.Layout.Column = 2;
-            app.SamplerateEditField.Value = 1000;
+            app.SamplerateEditField.Value = 10000;
 
             % Create HzLabel_5
             app.HzLabel_5 = uilabel(app.GridLayout7);
@@ -1275,7 +1276,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.SelectfilepathEditField = uieditfield(app.GridLayout8, 'text');
             app.SelectfilepathEditField.Layout.Row = 1;
             app.SelectfilepathEditField.Layout.Column = 2;
-            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator';
+            app.SelectfilepathEditField.Value = '\\space\fukushima\RM\prj_simpleEfficiency\experiment_currentSense\20240328_frequencyResponse';
 
             % Create BrowseButton
             app.BrowseButton = uibutton(app.GridLayout8, 'push');
@@ -1305,7 +1306,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.FileprefixEditField = uieditfield(app.GridLayout8, 'text');
             app.FileprefixEditField.Layout.Row = 2;
             app.FileprefixEditField.Layout.Column = 2;
-            app.FileprefixEditField.Value = 'XXX';
+            app.FileprefixEditField.Value = 'FR_L_1p0E6Ohm';
 
             % Create WavesettingsPanel
             app.WavesettingsPanel = uipanel(app.UIFigure);
@@ -1347,6 +1348,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.Reversepolarity1Button.Text = 'Reverse polarity 1';
             app.Reversepolarity1Button.Layout.Row = 2;
             app.Reversepolarity1Button.Layout.Column = 3;
+            app.Reversepolarity1Button.Value = true;
 
             % Create Amplitude1Label
             app.Amplitude1Label = uilabel(app.GridLayout);
@@ -1360,7 +1362,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.Amplitude1EditField.ValueChangedFcn = createCallbackFcn(app, @Amplitude1EditFieldValueChanged, true);
             app.Amplitude1EditField.Layout.Row = 2;
             app.Amplitude1EditField.Layout.Column = 5;
-            app.Amplitude1EditField.Value = 5;
+            app.Amplitude1EditField.Value = 10;
 
             % Create offset1EditFieldLabel
             app.offset1EditFieldLabel = uilabel(app.GridLayout);
@@ -1409,7 +1411,6 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.Amplitude2EditField.ValueChangedFcn = createCallbackFcn(app, @Amplitude2EditFieldValueChanged, true);
             app.Amplitude2EditField.Layout.Row = 3;
             app.Amplitude2EditField.Layout.Column = 5;
-            app.Amplitude2EditField.Value = 3;
 
             % Create offset2EditFieldLabel
             app.offset2EditFieldLabel = uilabel(app.GridLayout);
@@ -1541,6 +1542,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.TriggerCheckBox.Text = 'Trigger';
             app.TriggerCheckBox.Layout.Row = 1;
             app.TriggerCheckBox.Layout.Column = 1;
+            app.TriggerCheckBox.Value = true;
 
             % Create Trigger1EditFieldLabel
             app.Trigger1EditFieldLabel = uilabel(app.GridLayout);
@@ -1554,7 +1556,7 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
             app.Trigger1EditField.ValueChangedFcn = createCallbackFcn(app, @Trigger1EditFieldValueChanged, true);
             app.Trigger1EditField.Layout.Row = 2;
             app.Trigger1EditField.Layout.Column = 2;
-            app.Trigger1EditField.Value = 1;
+            app.Trigger1EditField.Value = 5;
 
             % Create kVLabel_4
             app.kVLabel_4 = uilabel(app.GridLayout);

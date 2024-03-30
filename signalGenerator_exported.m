@@ -533,6 +533,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
 
             if endIndex >= length(app.Arr.time)
+                pause(0.5)
                 stop_measurement(app);
                 disp('successfully end')
                 goButtonReady(app);
