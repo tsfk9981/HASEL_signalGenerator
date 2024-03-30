@@ -252,11 +252,10 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
                 end
 
                 Data = fillWithNan(app, app.data); % make a data array and fill the data length difference with NaN
-                % Packet = fillWithNan(app, app.packet);
 
                 mac_names_cell = cell(1, num_device);
                 for i = 1: num_device
-                    mac_names_cell{i} = mac_names(i,:);
+                    mac_names_cell{i} = ['MAC_', mac_names(i,:)]; % adding MAC_ to avoid producing variable names which start from number
                 end
 
                 writetable(array2table(Data, 'VariableNames', mac_names_cell), [app.rawFilename, '_current.dat']);
@@ -265,8 +264,6 @@ classdef signalGenerator_sweep_exported < matlab.apps.AppBase
                 app.loss = [];
                 app.packet_ind = [];
                 stop(app.timerStreamHandle);
-                % stop(app.timerPlotHandle);
-                % stop(app.timerPSDHandle);
                 app.CurrentSenseDongle.flush();
             end
 

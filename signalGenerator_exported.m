@@ -290,11 +290,10 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 end
 
                 Data = fillWithNan(app, app.data); % make a data array and fill the data length difference with NaN
-                % Packet = fillWithNan(app, app.packet);
 
                 mac_names_cell = cell(1, num_device);
                 for i = 1: num_device
-                    mac_names_cell{i} = mac_names(i,:);
+                    mac_names_cell{i} = ['MAC_', mac_names(i,:)]; % adding MAC_ to avoid producing variable names which start from number
                 end
 
                 writetable(array2table(Data, 'VariableNames', mac_names_cell), [app.rawFilename, '_current.dat']);
@@ -303,8 +302,6 @@ classdef signalGenerator_exported < matlab.apps.AppBase
                 app.loss = [];
                 app.packet_ind = [];
                 stop(app.timerStreamHandle);
-                % stop(app.timerPlotHandle);
-                % stop(app.timerPSDHandle);
                 app.CurrentSenseDongle.flush();
             end
 
@@ -871,7 +868,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
 
             app.timerStreamHandle = timer('TimerFcn', {@app.timerStreamCallback}, 'ExecutionMode', 'FixedRate', 'Period', 0.1,'StartDelay',.1);
 
-            SERIAL_PORT = 'COM4';       % change to device port
+            SERIAL_PORT = 'COM3';       % change to device port
             BAUD_RATE =  11520;
             app.CurrentSenseDongle = serialport(SERIAL_PORT, BAUD_RATE);
 
@@ -1343,7 +1340,7 @@ classdef signalGenerator_exported < matlab.apps.AppBase
             app.SelectfilepathEditField = uieditfield(app.GridLayout8, 'text');
             app.SelectfilepathEditField.Layout.Row = 1;
             app.SelectfilepathEditField.Layout.Column = 2;
-            app.SelectfilepathEditField.Value = 'C:\Users\fukushima\Desktop\HASEL_signalGenerator\';
+            app.SelectfilepathEditField.Value = '\\space\fukushima\RM\prj_simpleEfficiency\experiment_currentSense\20240328_frequencyResponse';
 
             % Create BrowseButton
             app.BrowseButton = uibutton(app.GridLayout8, 'push');
